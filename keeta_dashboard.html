@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>كيتا — داشبورد المتابعة</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#0a0a06;--s1:#14130b;--s2:#1d1b10;--s3:#2a2716;--brd:#332f1c;--brd2:#4a4327;
+--acc:#eab308;--acc2:#facc15;--acc3:#fde047;--grn:#22c55e;--grn2:#4ade80;
+--red:#ef4444;--red2:#f87171;--blu:#3b82f6;--blu2:#60a5fa;--pur:#a855f7;--pur2:#c084fc;
+--yel:#eab308;--yel2:#facc15;--cyn:#06b6d4;--orn:#f97316;
+--txt:#e2e8f0;--txt2:#94a3b8;--txt3:#64748b;--r:12px;--r2:8px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(234,179,8,.06),transparent),
+  linear-gradient(rgba(234,179,8,.02)1px,transparent 1px),
+  linear-gradient(90deg,rgba(234,179,8,.02)1px,transparent 1px);
+  background-size:100%,50px 50px,50px 50px}
+.app{position:relative;z-index:1;max-width:1480px;margin:0 auto;padding:16px}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;
+  background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.logo-box{width:40px;height:40px;background:linear-gradient(135deg,var(--acc),#a16207);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;
+  box-shadow:0 0 24px rgba(234,179,8,.3);flex-shrink:0}
+.logo-t{font-size:18px;font-weight:900}.logo-t em{color:var(--acc);font-style:normal}
+.logo-s{font-size:10px;color:var(--txt3);display:flex;align-items:center;gap:5px}
+.live{width:6px;height:6px;border-radius:50%;background:var(--grn);display:inline-block;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.7;box-shadow:0 0 0 4px rgba(34,197,94,0)}}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{padding:5px 10px;background:var(--s2);border:1px solid var(--brd);border-radius:6px;font-size:11px;color:var(--txt3)}
+.badge strong{color:var(--acc)}
+.rbtn{display:flex;align-items:center;gap:5px;padding:8px 14px;
+  background:linear-gradient(135deg,var(--acc),#a16207);border:none;border-radius:var(--r2);
+  color:#fff;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
+.rbtn:hover{opacity:.85;transform:translateY(-1px)}.rbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.home-btn{background:var(--s2)!important;border:1px solid var(--brd)!important}
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);padding:4px;overflow-x:auto}
+.tab{flex:1;min-width:max-content;padding:8px 14px;border:none;background:transparent;
+  color:var(--txt3);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;
+  border-radius:var(--r2);cursor:pointer;transition:.2s;white-space:nowrap;display:flex;align-items:center;gap:5px;justify-content:center}
+.tab.on{background:linear-gradient(135deg,var(--acc),#a16207);color:#fff;box-shadow:0 3px 12px rgba(234,179,8,.3)}
+.tab:hover:not(.on){color:var(--txt);background:var(--s2)}
+.pane{display:none}.pane.on{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);padding:16px 14px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{transform:translateY(-2px);border-color:var(--brd2)}
+.kpi::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--c,var(--acc))}
+.kpi-ic{font-size:20px;margin-bottom:6px}
+.kpi-v{font-size:26px;font-weight:900;color:var(--c,var(--acc));line-height:1}
+.kpi-l{font-size:11px;color:var(--txt2);margin-top:5px;font-weight:600}
+.kpi-sub{font-size:9.5px;color:var(--txt3);margin-top:2px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}}
+.card{background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);overflow:hidden}
+.card-h{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--brd)}
+.card-t{font-size:13px;font-weight:700}.card-t em{color:var(--acc);font-style:normal}
+.pill{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.pill.grn{background:rgba(34,197,94,.15);color:var(--grn2)}
+.pill.red{background:rgba(239,68,68,.15);color:var(--red2)}
+.pill.yel{background:rgba(234,179,8,.15);color:var(--yel2)}
+.tw{overflow-x:auto;max-height:600px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+thead th{position:sticky;top:0;background:var(--s2);padding:9px 8px;text-align:center;
+  font-weight:700;color:var(--txt2);font-size:10.5px;white-space:nowrap;border-bottom:1px solid var(--brd);z-index:2}
+th.td-l,td.td-l{text-align:right}
+tbody td{padding:8px;text-align:center;border-bottom:1px solid var(--brd);white-space:nowrap}
+tbody tr:hover{background:var(--s2)}
+.td-name{font-weight:600;color:var(--txt)}
+td.n{color:var(--txt3);font-size:10px}
+.b{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;display:inline-block}
+.b-ok{background:rgba(34,197,94,.15);color:var(--grn2)}
+.b-warn{background:rgba(234,179,8,.15);color:var(--yel2)}
+.b-bad{background:rgba(239,68,68,.15);color:var(--red2)}
+.b-blu{background:rgba(59,130,246,.15);color:var(--blu2)}
+.empty{text-align:center;color:var(--txt3);padding:24px;font-size:12px}
+.sel{padding:7px 12px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r2);
+  color:var(--txt);font-family:'Cairo';font-size:12px;font-weight:600;cursor:pointer}
+.inp{padding:8px 12px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r2);
+  color:var(--txt);font-family:'Cairo';font-size:12px;width:100%;max-width:280px}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block}
+.daygrid{display:flex;gap:2px;flex-wrap:wrap;max-width:340px}
+.dcell{width:15px;height:15px;border-radius:3px;font-size:0;cursor:default}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.modal-c{background:var(--s1);border:1px solid var(--brd2);border-radius:var(--r);max-width:560px;width:100%;max-height:88vh;overflow-y:auto}
+.modal-h{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--brd);position:sticky;top:0;background:var(--s1)}
+.x{background:var(--s2);border:1px solid var(--brd);color:var(--txt);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:16px}
+.pinfo{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:16px}
+.pi{background:var(--s2);border:1px solid var(--brd);border-radius:var(--r2);padding:9px 11px}
+.pi-l{font-size:9.5px;color:var(--txt3)}
+.pi-v{font-size:13px;font-weight:700;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hdr">
+  <div class="hdr-l">
+    <div class="logo-box">🟡</div>
+    <div>
+      <div class="logo-t">كيتا <em>Live</em></div>
+      <div class="logo-s"><span class="live"></span> داشبورد متابعة الصلاحية</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="badge">📅 آخر يوم: <strong id="last-day">—</strong></div>
+    <div class="badge">⏳ باقي: <strong id="days-left">—</strong> يوم</div>
+    <button class="rbtn" id="kbtn" onclick="document.getElementById('kxlsx').click()" style="background:linear-gradient(135deg,var(--acc),#a16207)">
+      <span id="kicon">📂</span> تحديث البيانات
+    </button>
+    <input type="file" id="kxlsx" accept=".xlsx,.xls" style="display:none" onchange="processKeetaExcel(event)">
+    <button class="rbtn home-btn" onclick="goHome()">🏠 الرئيسية</button>
+  </div>
+</header>
+<nav class="tabs">
+  <button class="tab on" onclick="showTab('overview',this)">📊 نظرة عامة</button>
+  <button class="tab" onclick="showTab('drivers',this)">🚗 السائقون</button>
+  <button class="tab" onclick="showTab('validity',this)">✅ الصلاحية</button>
+  <button class="tab" onclick="showTab('orders',this)">📦 الطلبات</button>
+</nav>
+<div id="kalert" style="display:none;padding:10px 16px;margin-bottom:14px;border-radius:8px;font-size:12px;font-weight:600"></div>
+
+<!-- OVERVIEW -->
+<div class="pane on" id="pane-overview">
+  <div class="kpi-grid" id="kpis"></div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-h"><div class="card-t">✅ حالة <em>الصلاحية</em></div></div>
+      <div id="validity-breakdown" style="padding:14px"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="card-t">🏙️ حسب <em>المدينة</em></div></div>
+      <div id="city-breakdown" style="padding:14px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">⚠️ يحتاجون <em>انتباه</em> (غير صالح أو صعب)</div><span class="pill red" id="attention-count">—</span></div>
+    <div class="tw"><table><thead><tr>
+      <th>#</th><th class="td-l">الاسم</th><th>المدينة</th><th>صالح</th><th>طلبات</th><th>الهدف</th><th>mod</th><th>Face ID</th><th>الحالة</th><th>السبب</th>
+    </tr></thead><tbody id="attention-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- DRIVERS -->
+<div class="pane" id="pane-drivers">
+  <div class="toolbar">
+    <input class="inp" id="search" placeholder="🔍 ابحث بالاسم..." oninput="renderDrivers()">
+    <select class="sel" id="city-filter" onchange="renderDrivers()">
+      <option value="">كل المدن</option><option value="Riyadh">الرياض</option><option value="Medina">المدينة</option>
+    </select>
+    <select class="sel" id="status-filter" onchange="renderDrivers()">
+      <option value="">كل الحالات</option><option value="صالح">صالح</option><option value="ممكن">ممكن</option><option value="صعب">صعب</option><option value="غير صالح">غير صالح</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">🚗 كل <em>السائقين</em></div><span class="pill yel" id="drivers-count">—</span></div>
+    <div class="tw"><table><thead><tr>
+      <th class="td-l">الاسم</th><th>المدينة</th><th>النوع</th><th>داوم</th><th>صالح</th><th>طلبات</th><th>الهدف</th><th>باقي طلب</th><th>مطلوب/يوم</th><th>mod</th><th>Face</th><th>إلزامي</th><th>الحالة</th>
+    </tr></thead><tbody id="drivers-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- VALIDITY -->
+<div class="pane" id="pane-validity">
+  <div class="kpi-grid" id="validity-kpis"></div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-h"><div class="card-t">❌ <em>غير صالح</em> (نهائياً)</div><span class="pill red" id="invalid-count">—</span></div>
+    <div style="padding:8px 16px;font-size:11px;color:var(--txt3);border-bottom:1px solid var(--brd)">سبب عدم الصلاحية: غياب أكثر من يوم إلزامي، أو mod سالب، أو Face ID أقل من 90%</div>
+    <div class="tw"><table><thead><tr>
+      <th>#</th><th class="td-l">الاسم</th><th>المدينة</th><th>mod</th><th>Face ID</th><th>إلزامي</th><th>السبب</th>
+    </tr></thead><tbody id="invalid-body"></tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">⚠️ <em>على الحافة</em> (ممكن/صعب يصل للحد الأدنى)</div><span class="pill yel" id="edge-count">—</span></div>
+    <div style="padding:8px 16px;font-size:11px;color:var(--txt3);border-bottom:1px solid var(--brd)">الرياض ≥ 300 طلب | المدينة ≥ 400 طلب</div>
+    <div class="tw"><table><thead><tr>
+      <th>#</th><th class="td-l">الاسم</th><th>المدينة</th><th>طلبات</th><th>الحد الأدنى</th><th>باقي للحد</th><th>مطلوب/يوم</th><th>الاحتمالية</th>
+    </tr></thead><tbody id="edge-body"></tbody></table></div>
+  </div>
+</div>
+
+<!-- ORDERS -->
+<div class="pane" id="pane-orders">
+  <div class="card">
+    <div class="card-h"><div class="card-t">📦 متابعة <em>الطلبات</em> — كم يحتاج يومياً ليكمل الهدف</div></div>
+    <div style="padding:8px 16px;font-size:11px;color:var(--txt3);border-bottom:1px solid var(--brd)">
+      need order daily = (الهدف − الطلبات الحالية) ÷ الأيام الباقية. الرياض هدف 420 | المدينة هدف 400
+    </div>
+    <div class="tw"><table><thead><tr>
+      <th>#</th><th class="td-l">الاسم</th><th>المدينة</th><th>طلبات حالية</th><th>الهدف</th><th>باقي</th><th>أيام باقية</th><th>مطلوب يومياً</th><th>التقييم</th>
+    </tr></thead><tbody id="orders-body"></tbody></table></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal"><div class="modal-c">
+  <div class="modal-h"><div class="card-t" id="m-name">—</div><button class="x" onclick="closeModal()">✕</button></div>
+  <div class="pinfo" id="m-info"></div>
+  <div style="padding:0 16px 8px"><div class="card-t" style="font-size:12px;margin-bottom:8px">📅 أيام الدوام</div>
+    <div class="daygrid" id="m-days"></div>
+    <div style="display:flex;gap:14px;margin-top:10px;font-size:10px;color:var(--txt3)">
+      <span><span class="dot" style="background:var(--grn)"></span> صالح</span>
+      <span><span class="dot" style="background:var(--red)"></span> غير صالح</span>
+      <span><span class="dot" style="background:var(--s3)"></span> ما داوم</span>
+    </div>
+  </div>
+  <div style="padding:16px"></div>
+</div></div>
+
+<script>
+const DATA = JSON.parse("{\"drivers\":[{\"id\":\"1773656723060421\",\"name\":\"Samir Khan\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":354,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":66,\"need_daily\":8.25,\"need_daily_sheet\":8.25,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":0,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1773656160237553\",\"name\":\"Md Emon\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":336,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":84,\"need_daily\":10.5,\"need_daily_sheet\":10.5,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":0,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":0,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1773042368202013\",\"name\":\"MUHAMMAD KHALID\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":461,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":0,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1772352251202998\",\"name\":\"Fessal Alad\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":20,\"orders\":361,\"face_id\":100.0,\"mod\":2.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":59,\"need_daily\":7.38,\"need_daily_sheet\":7.375,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":0,\"06/05\":1,\"07/05\":1,\"08/05\":0,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":0,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1772265727060994\",\"name\":\"MD SOJIB\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":23,\"orders\":327,\"face_id\":100.0,\"mod\":5.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":93,\"need_daily\":11.62,\"need_daily_sheet\":11.625,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1770665328237749\",\"name\":\"SHAHIN ALAM\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":398,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":22,\"need_daily\":2.75,\"need_daily_sheet\":2.75,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":0,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1766585720257572\",\"name\":\"Faysal Gazi\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":20,\"orders\":333,\"face_id\":92.3,\"mod\":2.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":87,\"need_daily\":10.88,\"need_daily_sheet\":10.875,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":0,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":0,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1766497285088752\",\"name\":\"MD Sajjad\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":12,\"orders\":135,\"face_id\":100.0,\"mod\":-6.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":285,\"need_daily\":35.62,\"need_daily_sheet\":35.625,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":false,\"probability\":\"غير صالح\",\"reasons\":[\"mod سالب (-6)\"],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":0,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":0,\"11/05\":1,\"12/05\":1,\"13/05\":0,\"14/05\":1,\"15/05\":0,\"16/05\":0,\"17/05\":0,\"18/05\":0,\"19/05\":0,\"20/05\":0,\"21/05\":1,\"22/05\":0,\"23/05\":0,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1766495850060849\",\"name\":\"MOHAMED KHAN\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":454,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":0,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1766494115480060\",\"name\":\"SAJIT PATEL\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":254,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":166,\"need_daily\":20.75,\"need_daily_sheet\":20.75,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":0,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":0,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1765711727257230\",\"name\":\"ZAFAR IQBAL\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":324,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":96,\"need_daily\":12.0,\"need_daily_sheet\":12.0,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":0,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1765625418088261\",\"name\":\"CHAUDHARY MEHMOOD\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":20,\"orders\":231,\"face_id\":100.0,\"mod\":2.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":189,\"need_daily\":23.62,\"need_daily_sheet\":23.625,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":0,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":0,\"20/05\":1,\"21/05\":0,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1765264374202706\",\"name\":\"JITENDRA YADAV\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":356,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":64,\"need_daily\":8.0,\"need_daily_sheet\":8.0,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":0,\"19/05\":1,\"20/05\":0,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1765097848206673\",\"name\":\"IKRAM AHMAD\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":20,\"orders\":392,\"face_id\":100.0,\"mod\":2.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":28,\"need_daily\":3.5,\"need_daily_sheet\":3.5,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":0,\"20/05\":0,\"21/05\":0,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764848391088001\",\"name\":\"SAMEER SALEH\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":322,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":98,\"need_daily\":12.25,\"need_daily_sheet\":12.25,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":0,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764839600088222\",\"name\":\"Md Prng\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":20,\"orders\":227,\"face_id\":100.0,\"mod\":2.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":193,\"need_daily\":24.12,\"need_daily_sheet\":24.125,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":0,\"17/05\":0,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":0,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764660264237440\",\"name\":\"MD SAJAL\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":23,\"orders\":424,\"face_id\":100.0,\"mod\":5.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764626832088414\",\"name\":\"Aminul Haque\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":390,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":30,\"need_daily\":3.75,\"need_daily_sheet\":3.75,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":0,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764595115480059\",\"name\":\"Md Shamim\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":286,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":134,\"need_daily\":16.75,\"need_daily_sheet\":16.75,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":0,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":0,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764588450206091\",\"name\":\"Amir Khan\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":458,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":0,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764585565480645\",\"name\":\"MD HASAN\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":344,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":76,\"need_daily\":9.5,\"need_daily_sheet\":9.5,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":0,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764581757480280\",\"name\":\"Mohsen Mulla\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":20,\"orders\":218,\"face_id\":100.0,\"mod\":2.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":202,\"need_daily\":25.25,\"need_daily_sheet\":25.25,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":0,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":0,\"16/05\":1,\"17/05\":0,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764509855480563\",\"name\":\"Anamul Hoque\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":274,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":146,\"need_daily\":18.25,\"need_daily_sheet\":18.25,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":0,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":0,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764252238060117\",\"name\":\"SHAH PORAN\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":350,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":70,\"need_daily\":8.75,\"need_daily_sheet\":8.75,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":0,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764251379257113\",\"name\":\"ELHADI ALI\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":23,\"orders\":307,\"face_id\":100.0,\"mod\":5.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":113,\"need_daily\":14.12,\"need_daily_sheet\":14.125,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764234901206130\",\"name\":\"RAM CHANDRA\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":289,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":131,\"need_daily\":16.38,\"need_daily_sheet\":16.375,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":0,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":0,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1764233009202779\",\"name\":\"MANOJ KUMAR\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":388,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":32,\"need_daily\":4.0,\"need_daily_sheet\":4.0,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":0,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1761485313237159\",\"name\":\"MUHAMMAD ALI\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":317,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":1,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":103,\"need_daily\":12.88,\"need_daily_sheet\":12.875,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":0,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1759658692202814\",\"name\":\"Md Shanto\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":325,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":95,\"need_daily\":11.88,\"need_daily_sheet\":11.875,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":0,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1751526092480454\",\"name\":\"Shahansha Babar\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":21,\"orders\":439,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":0,\"23/05\":0,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1748678456088477\",\"name\":\"Mohammed Khuris\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":19,\"orders\":322,\"face_id\":100.0,\"mod\":1.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":98,\"need_daily\":12.25,\"need_daily_sheet\":12.25,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":0,\"11/05\":0,\"12/05\":0,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1739626259237214\",\"name\":\"Mantu Deb\",\"type\":\"Car\",\"city\":\"Riyadh\",\"worked\":23,\"valid\":22,\"orders\":377,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":300,\"target\":420,\"days_left\":8,\"remaining_orders\":43,\"need_daily\":5.38,\"need_daily_sheet\":5.375,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":1,\"07/05\":0,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1777477453257814\",\"name\":\"Muhammad Asghar\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":21,\"orders\":521,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":0,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1777476731060103\",\"name\":\"MUHAMMAD TUFAIL\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":22,\"orders\":471,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1771291491237795\",\"name\":\"Md Alam\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":22,\"orders\":366,\"face_id\":80.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":34,\"need_daily\":4.25,\"need_daily_sheet\":4.25,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":false,\"probability\":\"غير صالح\",\"reasons\":[\"Face ID 80%\"],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1767977646237734\",\"name\":\"Irfan Naseer\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":20,\"orders\":343,\"face_id\":100.0,\"mod\":2.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":57,\"need_daily\":7.12,\"need_daily_sheet\":7.125,\"met_min\":false,\"can_reach_min\":false,\"valid_status\":true,\"probability\":\"صعب\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":0,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":0,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1763300049202064\",\"name\":\"Farhan Ali\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":21,\"orders\":425,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":0,\"need_daily\":0,\"need_daily_sheet\":null,\"met_min\":true,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"صالح\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":0,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1739217113202176\",\"name\":\"Muddasar Arif\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":21,\"orders\":371,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":1,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":29,\"need_daily\":3.62,\"need_daily_sheet\":3.625,\"met_min\":false,\"can_reach_min\":false,\"valid_status\":true,\"probability\":\"صعب\",\"reasons\":[],\"days\":{\"01/05\":0,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1739048261202585\",\"name\":\"Muhammad Hussain\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":22,\"orders\":369,\"face_id\":100.0,\"mod\":4.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":31,\"need_daily\":3.88,\"need_daily_sheet\":3.875,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1737022078060937\",\"name\":\"Noman Haider\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":23,\"valid\":21,\"orders\":389,\"face_id\":100.0,\"mod\":3.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":11,\"need_daily\":1.38,\"need_daily_sheet\":1.375,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":0,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1777983520060121\",\"name\":\"Mohammad Jamal\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":18,\"valid\":18,\"orders\":260,\"face_id\":null,\"mod\":3.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":140,\"need_daily\":17.5,\"need_daily_sheet\":17.5,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":null,\"02/05\":null,\"03/05\":null,\"04/05\":null,\"05/05\":null,\"06/05\":1,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":1,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":1,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1778065093088302\",\"name\":\"Md Alal\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":18,\"valid\":15,\"orders\":226,\"face_id\":null,\"mod\":1.0,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":174,\"need_daily\":21.75,\"need_daily_sheet\":21.75,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":null,\"02/05\":null,\"03/05\":null,\"04/05\":null,\"05/05\":null,\"06/05\":0,\"07/05\":1,\"08/05\":1,\"09/05\":1,\"10/05\":0,\"11/05\":1,\"12/05\":1,\"13/05\":1,\"14/05\":1,\"15/05\":1,\"16/05\":1,\"17/05\":0,\"18/05\":1,\"19/05\":1,\"20/05\":1,\"21/05\":1,\"22/05\":1,\"23/05\":1,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1736843744237285\",\"name\":\"Muhammad Farooq\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":6,\"valid\":5,\"orders\":100,\"face_id\":100.0,\"mod\":null,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":300,\"need_daily\":37.5,\"need_daily_sheet\":37.5,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":1,\"06/05\":0,\"07/05\":null,\"08/05\":null,\"09/05\":null,\"10/05\":null,\"11/05\":null,\"12/05\":null,\"13/05\":null,\"14/05\":null,\"15/05\":null,\"16/05\":null,\"17/05\":null,\"18/05\":null,\"19/05\":null,\"20/05\":null,\"21/05\":null,\"22/05\":null,\"23/05\":null,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}},{\"id\":\"1736609062206976\",\"name\":\"Rana Khan\",\"type\":\"bike\",\"city\":\"Medina\",\"worked\":5,\"valid\":4,\"orders\":88,\"face_id\":100.0,\"mod\":null,\"mandatory\":0,\"min_orders\":400,\"target\":400,\"days_left\":8,\"remaining_orders\":312,\"need_daily\":39.0,\"need_daily_sheet\":39.0,\"met_min\":false,\"can_reach_min\":true,\"valid_status\":true,\"probability\":\"ممكن\",\"reasons\":[],\"days\":{\"01/05\":1,\"02/05\":1,\"03/05\":1,\"04/05\":1,\"05/05\":0,\"06/05\":null,\"07/05\":null,\"08/05\":null,\"09/05\":null,\"10/05\":null,\"11/05\":null,\"12/05\":null,\"13/05\":null,\"14/05\":null,\"15/05\":null,\"16/05\":null,\"17/05\":null,\"18/05\":null,\"19/05\":null,\"20/05\":null,\"21/05\":null,\"22/05\":null,\"23/05\":null,\"24/05\":null,\"25/05\":null,\"26/05\":null,\"27/05\":null,\"28/05\":null,\"29/05\":null,\"30/05\":null,\"31/05\":null}}],\"meta\":{\"Riyadh\":{\"last_day\":23,\"count\":32,\"min_orders\":300,\"target\":420},\"Medina\":{\"last_day\":23,\"count\":12,\"min_orders\":400,\"target\":400}},\"dates\":[\"01/05\",\"02/05\",\"03/05\",\"04/05\",\"05/05\",\"06/05\",\"07/05\",\"08/05\",\"09/05\",\"10/05\",\"11/05\",\"12/05\",\"13/05\",\"14/05\",\"15/05\",\"16/05\",\"17/05\",\"18/05\",\"19/05\",\"20/05\",\"21/05\",\"22/05\",\"23/05\",\"24/05\",\"25/05\",\"26/05\",\"27/05\",\"28/05\",\"29/05\",\"30/05\",\"31/05\"],\"face_min\":90.0,\"total_days\":31}");
+const CITY_AR = {Riyadh:'الرياض', Medina:'المدينة'};
+
+function goHome(){ window.location.href = 'index.html'; }
+
+function showTab(id, btn){
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pane-'+id).classList.add('on');
+  if(btn) btn.classList.add('on');
+}
+
+function statusBadge(p){
+  if(p==='صالح') return '<span class="b b-ok">✅ صالح</span>';
+  if(p==='ممكن') return '<span class="b b-warn">⚠️ ممكن</span>';
+  if(p==='صعب') return '<span class="b b-bad">❌ صعب</span>';
+  return '<span class="b b-bad">🚫 غير صالح</span>';
+}
+function faceBadge(f){
+  if(f===null) return '<span class="b b-warn">—</span>';
+  const cls = f>=90?'b-ok':'b-bad';
+  return '<span class="b '+cls+'">'+f+'%</span>';
+}
+function modBadge(m){
+  if(m===null) return '—';
+  const cls = m<0?'b-bad':'b-ok';
+  return '<span class="b '+cls+'">'+m+'</span>';
+}
+
+function renderAll(){
+  const last = Math.max(...Object.values(DATA.meta).map(m=>m.last_day));
+  document.getElementById('last-day').textContent = last+'/05';
+  document.getElementById('days-left').textContent = DATA.total_days - last;
+  renderOverview();
+  renderDrivers();
+  renderValidity();
+  renderOrders();
+}
+
+function renderOverview(){
+  const ds = DATA.drivers;
+  const valid = ds.filter(d=>d.valid_status).length;
+  const invalid = ds.length - valid;
+  const metMin = ds.filter(d=>d.met_min).length;
+  const avgOrders = Math.round(ds.reduce((s,d)=>s+d.orders,0)/ds.length);
+  document.getElementById('kpis').innerHTML = [
+    {ic:'👥',v:ds.length,l:'إجمالي السائقين',sub:Object.entries(DATA.meta).map(([c,m])=>CITY_AR[c]+' '+m.count).join(' | '),c:'var(--acc)'},
+    {ic:'✅',v:valid,l:'صالحون',sub:'مستوفون للشروط',c:'var(--grn)'},
+    {ic:'🚫',v:invalid,l:'غير صالحين',sub:'mod سالب/إلزامي/Face',c:'var(--red)'},
+    {ic:'📦',v:metMin,l:'وصلوا الحد الأدنى',sub:'من '+ds.length,c:'var(--blu)'},
+    {ic:'📊',v:avgOrders,l:'متوسط الطلبات',sub:'لكل سائق',c:'var(--pur)'},
+  ].map(k=>'<div class="kpi" style="--c:'+k.c+'"><div class="kpi-ic">'+k.ic+'</div><div class="kpi-v">'+k.v+'</div><div class="kpi-l">'+k.l+'</div><div class="kpi-sub">'+k.sub+'</div></div>').join('');
+
+  // Validity breakdown bar
+  const probs = {};
+  ds.forEach(d=>{probs[d.probability]=(probs[d.probability]||0)+1});
+  const colors = {'صالح':'var(--grn)','ممكن':'var(--yel)','صعب':'var(--orn)','غير صالح':'var(--red)'};
+  document.getElementById('validity-breakdown').innerHTML = Object.entries(probs).map(([k,v])=>{
+    const pct = Math.round(v/ds.length*100);
+    return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span>'+statusBadge(k)+'</span><span style="color:var(--txt2)">'+v+' ('+pct+'%)</span></div><div style="height:7px;background:var(--s3);border-radius:4px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+colors[k]+'"></div></div></div>';
+  }).join('');
+
+  // City breakdown
+  document.getElementById('city-breakdown').innerHTML = Object.entries(DATA.meta).map(([c,m])=>{
+    const cds = ds.filter(d=>d.city===c);
+    const cvalid = cds.filter(d=>d.valid_status).length;
+    const cmet = cds.filter(d=>d.met_min).length;
+    return '<div style="background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:12px;margin-bottom:10px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">'+CITY_AR[c]+' <span style="color:var(--txt3);font-size:10px">(هدف '+m.target+' | حد أدنى '+m.min_orders+')</span></div><div style="display:flex;gap:14px;font-size:11px"><span>👥 <strong>'+m.count+'</strong></span><span style="color:var(--grn2)">✅ <strong>'+cvalid+'</strong></span><span style="color:var(--blu2)">📦 <strong>'+cmet+'</strong> وصلوا الحد</span></div></div>';
+  }).join('');
+
+  // Attention table
+  const att = ds.filter(d=>!d.valid_status || d.probability==='صعب').sort((a,b)=>a.valid_status-b.valid_status);
+  document.getElementById('attention-count').textContent = att.length+' سائق';
+  document.getElementById('attention-body').innerHTML = att.length ? att.map((d,i)=>row(d,i)).join('') : '<tr><td colspan="10" class="empty">لا يوجد 🎉</td></tr>';
+}
+
+function row(d,i){
+  return '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+    '<td class="n">'+(i+1)+'</td>'+
+    '<td class="td-l td-name">'+d.name+'</td>'+
+    '<td style="color:var(--acc)">'+CITY_AR[d.city]+'</td>'+
+    '<td><strong>'+d.valid+'</strong></td>'+
+    '<td style="color:var(--blu2);font-weight:700">'+d.orders+'</td>'+
+    '<td style="color:var(--txt3)">'+d.target+'</td>'+
+    '<td>'+modBadge(d.mod)+'</td>'+
+    '<td>'+faceBadge(d.face_id)+'</td>'+
+    '<td>'+statusBadge(d.probability)+'</td>'+
+    '<td style="color:var(--red2);font-size:10px">'+(d.reasons.join('، ')||'—')+'</td></tr>';
+}
+
+function renderDrivers(){
+  const q = (document.getElementById('search').value||'').toLowerCase();
+  const cf = document.getElementById('city-filter').value;
+  const sf = document.getElementById('status-filter').value;
+  let ds = DATA.drivers.filter(d=>(!q||d.name.toLowerCase().includes(q))&&(!cf||d.city===cf)&&(!sf||d.probability===sf));
+  ds = ds.sort((a,b)=>b.orders-a.orders);
+  document.getElementById('drivers-count').textContent = ds.length+' سائق';
+  document.getElementById('drivers-body').innerHTML = ds.length ? ds.map(d=>
+    '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+    '<td class="td-l td-name">'+d.name+'</td>'+
+    '<td style="color:var(--acc);font-size:10px">'+CITY_AR[d.city]+'</td>'+
+    '<td style="font-size:10px;color:var(--txt3)">'+(d.type||'—')+'</td>'+
+    '<td>'+d.worked+'</td>'+
+    '<td><strong>'+d.valid+'</strong></td>'+
+    '<td style="color:var(--blu2);font-weight:700">'+d.orders+'</td>'+
+    '<td style="color:var(--txt3)">'+d.target+'</td>'+
+    '<td>'+(d.remaining_orders>0?d.remaining_orders:'<span style="color:var(--grn2)">✓</span>')+'</td>'+
+    '<td style="font-weight:700;color:'+(d.need_daily>0?'var(--yel2)':'var(--grn2)')+'">'+(d.need_daily>0?d.need_daily:'—')+'</td>'+
+    '<td>'+modBadge(d.mod)+'</td>'+
+    '<td>'+faceBadge(d.face_id)+'</td>'+
+    '<td>'+(d.mandatory>1?'<span class="b b-bad">'+d.mandatory+'</span>':d.mandatory)+'</td>'+
+    '<td>'+statusBadge(d.probability)+'</td></tr>'
+  ).join('') : '<tr><td colspan="13" class="empty">لا نتائج</td></tr>';
+}
+
+function renderValidity(){
+  const ds = DATA.drivers;
+  const valid = ds.filter(d=>d.valid_status);
+  const invalid = ds.filter(d=>!d.valid_status);
+  const edge = ds.filter(d=>d.valid_status && !d.met_min);
+  document.getElementById('validity-kpis').innerHTML = [
+    {ic:'✅',v:valid.length,l:'صالحون',c:'var(--grn)'},
+    {ic:'🚫',v:invalid.length,l:'غير صالحين',c:'var(--red)'},
+    {ic:'⚠️',v:edge.filter(d=>d.probability==='ممكن').length,l:'ممكن (يصل الحد)',c:'var(--yel)'},
+    {ic:'❌',v:edge.filter(d=>d.probability==='صعب').length,l:'صعب يصل الحد',c:'var(--orn)'},
+  ].map(k=>'<div class="kpi" style="--c:'+k.c+'"><div class="kpi-ic">'+k.ic+'</div><div class="kpi-v">'+k.v+'</div><div class="kpi-l">'+k.l+'</div></div>').join('');
+
+  document.getElementById('invalid-count').textContent = invalid.length+' سائق';
+  document.getElementById('invalid-body').innerHTML = invalid.length ? invalid.map((d,i)=>
+    '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+    '<td class="n">'+(i+1)+'</td><td class="td-l td-name">'+d.name+'</td>'+
+    '<td style="color:var(--acc)">'+CITY_AR[d.city]+'</td>'+
+    '<td>'+modBadge(d.mod)+'</td><td>'+faceBadge(d.face_id)+'</td>'+
+    '<td>'+(d.mandatory>1?'<span class="b b-bad">'+d.mandatory+'</span>':d.mandatory)+'</td>'+
+    '<td style="color:var(--red2);font-size:10px">'+d.reasons.join('، ')+'</td></tr>'
+  ).join('') : '<tr><td colspan="7" class="empty">الجميع صالح ✓</td></tr>';
+
+  const edgeSorted = edge.sort((a,b)=>a.remaining_orders-b.remaining_orders);
+  document.getElementById('edge-count').textContent = edge.length+' سائق';
+  document.getElementById('edge-body').innerHTML = edge.length ? edgeSorted.map((d,i)=>
+    '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+    '<td class="n">'+(i+1)+'</td><td class="td-l td-name">'+d.name+'</td>'+
+    '<td style="color:var(--acc)">'+CITY_AR[d.city]+'</td>'+
+    '<td style="color:var(--blu2);font-weight:700">'+d.orders+'</td>'+
+    '<td style="color:var(--txt3)">'+d.min_orders+'</td>'+
+    '<td>'+Math.max(d.min_orders-d.orders,0)+'</td>'+
+    '<td style="font-weight:700;color:var(--yel2)">'+(d.need_daily>0?d.need_daily:'—')+'</td>'+
+    '<td>'+statusBadge(d.probability)+'</td></tr>'
+  ).join('') : '<tr><td colspan="8" class="empty">لا يوجد 🎉</td></tr>';
+}
+
+function renderOrders(){
+  const ds = [...DATA.drivers].sort((a,b)=>b.need_daily-a.need_daily);
+  document.getElementById('orders-body').innerHTML = ds.map((d,i)=>{
+    let rate;
+    if(d.remaining_orders<=0) rate='<span class="b b-ok">✅ وصل الهدف</span>';
+    else if(d.need_daily<=12) rate='<span class="b b-ok">سهل</span>';
+    else if(d.need_daily<=20) rate='<span class="b b-warn">متوسط</span>';
+    else rate='<span class="b b-bad">صعب</span>';
+    return '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+    '<td class="n">'+(i+1)+'</td><td class="td-l td-name">'+d.name+'</td>'+
+    '<td style="color:var(--acc);font-size:10px">'+CITY_AR[d.city]+'</td>'+
+    '<td style="color:var(--blu2);font-weight:700">'+d.orders+'</td>'+
+    '<td style="color:var(--txt3)">'+d.target+'</td>'+
+    '<td>'+(d.remaining_orders>0?d.remaining_orders:'<span style="color:var(--grn2)">0</span>')+'</td>'+
+    '<td>'+d.days_left+'</td>'+
+    '<td style="font-weight:900;font-size:13px;color:'+(d.need_daily>0?'var(--yel2)':'var(--grn2)')+'">'+(d.need_daily>0?d.need_daily:'—')+'</td>'+
+    '<td>'+rate+'</td></tr>';
+  }).join('');
+}
+
+function openProfile(id){
+  const d = DATA.drivers.find(x=>String(x.id)===String(id));
+  if(!d) return;
+  document.getElementById('m-name').textContent = d.name;
+  const info = [
+    ['المدينة',CITY_AR[d.city]],['النوع',d.type||'—'],
+    ['أيام الدوام',d.worked],['أيام صالحة',d.valid],
+    ['الطلبات',d.orders],['الهدف',d.target],
+    ['الحد الأدنى',d.min_orders],['باقي للهدف',d.remaining_orders],
+    ['أيام باقية',d.days_left],['مطلوب يومياً',d.need_daily>0?d.need_daily:'وصل ✓'],
+    ['mod',d.mod===null?'—':d.mod],['Face ID',d.face_id===null?'—':d.face_id+'%'],
+    ['غياب إلزامي',d.mandatory],['الحالة',d.probability],
+  ];
+  document.getElementById('m-info').innerHTML = info.map(([l,v])=>
+    '<div class="pi"><div class="pi-l">'+l+'</div><div class="pi-v">'+v+'</div></div>').join('') +
+    (d.reasons.length?'<div class="pi" style="grid-column:1/-1;border-color:var(--red)"><div class="pi-l">سبب عدم الصلاحية</div><div class="pi-v" style="color:var(--red2);font-size:12px">'+d.reasons.join('، ')+'</div></div>':'');
+  // Day grid
+  document.getElementById('m-days').innerHTML = DATA.dates.map(dt=>{
+    const v = d.days[dt];
+    const bg = v===1?'var(--grn)':v===0?'var(--red)':'var(--s3)';
+    return '<div class="dcell" style="background:'+bg+'" title="'+dt+'"></div>';
+  }).join('');
+  document.getElementById('modal').classList.add('on');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+
+function kAlert(msg, ok){
+  const a = document.getElementById('kalert');
+  a.style.display = 'block';
+  a.style.background = ok ? 'rgba(34,197,94,.12)' : 'rgba(239,68,68,.12)';
+  a.style.color = ok ? 'var(--grn2)' : 'var(--red2)';
+  a.style.border = '1px solid ' + (ok ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)');
+  a.textContent = msg;
+}
+
+function processKeetaExcel(event){
+  const file = event.target.files[0];
+  if (!file) return;
+  const btn = document.getElementById('kbtn'), icon = document.getElementById('kicon');
+  btn.disabled = true; icon.textContent = '⏳';
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true});
+      const data = parseKeetaWorkbook(wb);
+      Object.assign(DATA, data);
+      renderAll();
+      kAlert('✅ تم تحديث البيانات — ' + DATA.drivers.length + ' سائق', true);
+    } catch(err){
+      console.error('[Keeta]', err);
+      kAlert('⚠️ خطأ في قراءة الملف: ' + err.message, false);
+    } finally {
+      btn.disabled = false; icon.textContent = '📂'; event.target.value = '';
+    }
+  };
+  reader.onerror = function(){ kAlert('⚠️ تعذّر قراءة الملف', false); btn.disabled=false; icon.textContent='📂'; };
+  reader.readAsArrayBuffer(file);
+}
+
+function kCellNum(v){ const n = Number(v); return isNaN(n) ? 0 : n; }
+function kFmtDM(d){ return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); }
+
+function parseKeetaWorkbook(wb){
+  const CFG = {
+    Riyadh: {min_orders:300, target:420, sheet:'Riy 5 2026'},
+    Medina: {min_orders:400, target:400, sheet:'Med 5 2026'},
+  };
+  const FACE_MIN = 0.90, TOTAL_DAYS = 31;
+
+  function rowsOf(name){
+    // tolerant sheet lookup
+    let real = wb.SheetNames.find(n => n.trim() === name.trim());
+    if (!real) real = wb.SheetNames.find(n => n.trim().replace(/\s+/g,' ') === name.trim());
+    if (!real) throw new Error('الورقة غير موجودة: ' + name);
+    return XLSX.utils.sheet_to_json(wb.Sheets[real], {header:1, raw:true, defval:null});
+  }
+
+  const allDrivers = [];
+  const meta = {};
+  let dates = [];
+
+  for (const city of Object.keys(CFG)){
+    const cfg = CFG[city];
+    const rows = rowsOf(cfg.sheet);
+    const hdr = rows[1];
+    // date columns 3..33 that are Date
+    const dateCols = [];
+    for (let c = 3; c <= 33; c++){ if (hdr[c] instanceof Date) dateCols.push([c, hdr[c]]); }
+    if (!dates.length) dates = dateCols.map(([c,dt]) => kFmtDM(dt));
+    // column map
+    const colmap = {mandatory:34};
+    hdr.forEach((v,ci) => { if (typeof v === 'string'){ const t=v.trim(); if (['valid','Orders','mod','Face ID','need order daly'].includes(t)) colmap[t]=ci; } });
+    // last reported day
+    let lastIdx = null;
+    for (const [c,dt] of dateCols){ if (rows.some((r,i) => i>=2 && r && (r[c]===0 || r[c]===1))) lastIdx = c; }
+    const lastDay = lastIdx ? hdr[lastIdx].getDate() : 0;
+    const daysLeft = TOTAL_DAYS - lastDay;
+
+    let count = 0;
+    for (let i = 2; i < rows.length; i++){
+      const r = rows[i]; if (!r || !r[0] || r[1]==null) continue;
+      count++;
+      const days = {}; let worked=0, valid=0;
+      for (const [c,dt] of dateCols){ const v = r[c]; const k = kFmtDM(dt);
+        if (v===1){days[k]=1;worked++;valid++;} else if (v===0){days[k]=0;worked++;} else days[k]=null; }
+      let orders = r[colmap.Orders]; orders = (orders==null||orders===' ')?0:(parseInt(orders)||0);
+      let face = parseFloat(r[colmap['Face ID']]); if (isNaN(face)) face = null;
+      let mod = parseFloat(r[colmap.mod]); if (isNaN(mod)) mod = null;
+      let mand = parseInt(r[colmap.mandatory]); if (isNaN(mand)) mand = 0;
+
+      const target = cfg.target;
+      const remaining = Math.max(target - orders, 0);
+      const needDaily = (daysLeft>0 && remaining>0) ? Math.round(remaining/daysLeft*100)/100 : 0;
+
+      const reasons = []; let validStatus = true;
+      if (mand && mand > 1){ validStatus=false; reasons.push('غياب '+mand+' أيام إلزامية'); }
+      if (mod !== null && mod < 0){ validStatus=false; reasons.push('mod سالب ('+Math.round(mod)+')'); }
+      if (face !== null && face < FACE_MIN){ validStatus=false; reasons.push('Face ID '+Math.round(face*100)+'%'); }
+
+      const canReachMin = daysLeft>0 ? (orders + needDaily*daysLeft) >= cfg.min_orders : orders>=cfg.min_orders;
+      const metMin = orders >= cfg.min_orders;
+      let probability;
+      if (!validStatus) probability='غير صالح';
+      else if (metMin) probability='صالح';
+      else if (canReachMin) probability='ممكن';
+      else probability='صعب';
+
+      allDrivers.push({
+        id:String(r[0]), name:String(r[1]).trim(), type:String(r[2]||'').trim(),
+        city, worked, valid, orders,
+        face_id: face!==null ? Math.round(face*1000)/10 : null,
+        mod, mandatory:mand, min_orders:cfg.min_orders, target,
+        days_left:daysLeft, remaining_orders:remaining, need_daily:needDaily,
+        need_daily_sheet:null, met_min:metMin, can_reach_min:canReachMin,
+        valid_status:validStatus, probability, reasons, days,
+      });
+    }
+    meta[city] = {last_day:lastDay, count, min_orders:cfg.min_orders, target:cfg.target};
+  }
+
+  return {drivers:allDrivers, meta, dates, face_min:FACE_MIN*100, total_days:TOTAL_DAYS};
+}
+
+renderAll();
+</script>
+</body>
+</html>
