@@ -139,6 +139,9 @@ tbody td{padding:8px 12px;text-align:center;vertical-align:middle}
 .cell-mid{color:var(--txt2)}
 .cell-low{color:var(--txt3)}
 .cell-off{color:var(--s3)}
+.ok-tag{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;
+  border-radius:50%;background:rgba(34,197,94,.2);color:#22c55e;font-size:9px;font-weight:900;
+  margin-left:4px;flex-shrink:0;vertical-align:middle}
 .matrix-toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
   background:var(--s1);border:1.5px solid var(--brd2);border-radius:var(--r2);
   font-size:11px;font-weight:700;cursor:pointer;transition:.2s;color:var(--txt2);user-select:none}
@@ -633,10 +636,10 @@ const I18N = {
     lbl_allcity:'كل المدن', lbl_allsup:'كل المشرفين',
     ct_dailyorders_a:'📅 الطلبات', ct_dailyorders_b:'اليومية لكل مندوب',
     do_search_ph:'🔍 ابحث باسم المندوب...', do_hl_label:'⚠️ تمييز الأيام الأقل من:',
-    do_hint:'الخلايا الحمراء = طلبات أقل من الحد · الفارغة = لم يداوم', do_nohl:'بدون تمييز',
+    do_hint:'الأحمر = أقل من الحد · ✓ = محقّق الهدف (تمام) · المخالف = غير محقّق ولديه أيام ضعيفة', do_nohl:'بدون تمييز',
     ct_dailyhours_a:'⏱️ الساعات', ct_dailyhours_b:'اليومية لكل مندوب',
     dh_search_ph:'🔍 ابحث باسم المندوب...', dh_hl_label:'⚠️ تمييز الأيام الأقل من:',
-    dh_hint:'الخلايا الحمراء = ساعات أقل من الحد · الفارغة = لم يداوم',
+    dh_hint:'الأحمر = أقل من الحد · ✓ = أكمل الالتزام (تمام) · المخالف = لم يُكمل ولديه أيام ناقصة',
     only_violators:'إظهار المخالفين فقط',
     subtitle:'داشبورد المتابعة الحية',
     // KPIs overview
@@ -722,10 +725,10 @@ const I18N = {
     lbl_allcity:'All Cities', lbl_allsup:'All Supervisors',
     ct_dailyorders_a:'📅 Daily', ct_dailyorders_b:'Orders per Driver',
     do_search_ph:'🔍 Search driver name...', do_hl_label:'⚠️ Highlight days below:',
-    do_hint:'Red cells = orders below threshold · Empty = did not work', do_nohl:'No highlight',
+    do_hint:'Red = below threshold · ✓ = target met (OK) · violator = not met & has weak days', do_nohl:'No highlight',
     ct_dailyhours_a:'⏱️ Daily', ct_dailyhours_b:'Hours per Driver',
     dh_search_ph:'🔍 Search driver name...', dh_hl_label:'⚠️ Highlight days below:',
-    dh_hint:'Red cells = hours below threshold · Empty = did not work',
+    dh_hint:'Red = below threshold · ✓ = met commitment (OK) · violator = not met & has short days',
     only_violators:'Show violators only',
     subtitle:'Live Monitoring Dashboard',
     kpi_daily_avg:'Daily Average', kpi_daily_sub:'orders/day', kpi_cities:'Cities', kpi_cities_sub:'active cities',
@@ -1597,8 +1600,10 @@ function renderDailyOrders(){
   );
   // عدّ الأيام الضعيفة لكل سائق
   function weakOf(d){ let w=0; dates.forEach(dt=>{const v=d.daily?d.daily[dt]:undefined; if(typeof v==='number'&&v>0&&thr>0&&v<thr)w++;}); return w; }
+  // المندوب "تمام" إذا حقّق الهدف (محقق أو needs<=0) بغض النظر عن سقطاته اليومية
+  function meetsOrders(d){ return d.status==='محقق' || (typeof d.needs==='number' && d.needs<=0); }
   // فلتر المخالفين فقط
-  if (__doOnly && thr>0) list = list.filter(d=>weakOf(d)>0);
+  if (__doOnly && thr>0) list = list.filter(d=>weakOf(d)>0 && !meetsOrders(d));
   list.sort((a,b)=>(b.completed||0)-(a.completed||0));
 
   document.getElementById('do-count').textContent = list.length+' '+T('driver_unit');
@@ -1627,11 +1632,13 @@ function renderDailyOrders(){
       const disp=(v===undefined||v===null)?'·':(v===0?'—':v);
       return '<td class="'+cellCls(v)+'">'+disp+'</td>';
     }).join('');
+    const ok = meetsOrders(d);
+    const okBadge = ok ? '<span class="ok-tag" title="'+(isAr?'محقّق الهدف':'Target met')+'">✓</span>' : '';
     return '<tr onclick="openProfile('+d.id+')">'+
-      '<td class="col-name">'+d.name+'<div class="nm-sub">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+'</div></td>'+
+      '<td class="col-name">'+okBadge+d.name+'<div class="nm-sub">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+'</div></td>'+
       cells+
       '<td class="col-sum">'+total.toLocaleString()+'</td>'+
-      (thr>0?'<td class="col-weak" style="color:'+(weakDays>0?'#fca5a5':'var(--txt3)')+'">'+weakDays+'</td>':'')+
+      (thr>0?'<td class="col-weak" style="color:'+(weakDays>0&&!ok?'#fca5a5':'var(--txt3)')+'">'+(ok?'✓':weakDays)+'</td>':'')+
       '</tr>';
   }).join('');
   const ncol = dates.length + 2 + (thr>0?1:0);
@@ -1674,7 +1681,13 @@ function renderDailyHours(){
     d.daily_hours
   );
   function weakOf(d){ let w=0; dates.forEach(dt=>{const v=d.daily_hours?d.daily_hours[dt]:undefined; if(typeof v==='number'&&v>0&&thr>0&&v<thr)w++;}); return w; }
-  if (__dhOnly && thr>0) list = list.filter(d=>weakOf(d)>0);
+  // المندوب "تمام" إذا حقّق الالتزام: عادي ≥26 يوم 8 ساعات، أو متأخر ≥90% من أيامه
+  function meetsHours(d){
+    const d8=d.days_8h||0;
+    if(d.is_late_starter){ return d8 >= (d.commit_required||Math.ceil((d.expected_days||26)*0.9)); }
+    return d8 >= 26;
+  }
+  if (__dhOnly && thr>0) list = list.filter(d=>weakOf(d)>0 && !meetsHours(d));
   list.sort((a,b)=>(b.hours||0)-(a.hours||0));
   document.getElementById('dh-count').textContent = list.length+' '+T('driver_unit');
 
@@ -1702,11 +1715,13 @@ function renderDailyHours(){
       const disp=(v===undefined||v===null)?'·':(v===0?'—':v.toFixed(1));
       return '<td class="'+cellCls(v)+'">'+disp+'</td>';
     }).join('');
+    const ok = meetsHours(d);
+    const okBadge = ok ? '<span class="ok-tag" title="'+(isAr?'أكمل الالتزام':'Met commitment')+'">✓</span>' : '';
     return '<tr onclick="openProfile('+d.id+')">'+
-      '<td class="col-name">'+d.name+'<div class="nm-sub">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+'</div></td>'+
+      '<td class="col-name">'+okBadge+d.name+'<div class="nm-sub">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+(d.is_late_starter?' · '+(isAr?'متأخر':'late'):'')+'</div></td>'+
       cells+
       '<td class="col-sum">'+total.toFixed(0)+'</td>'+
-      (thr>0?'<td class="col-weak" style="color:'+(weakDays>0?'#fca5a5':'var(--txt3)')+'">'+weakDays+'</td>':'')+
+      (thr>0?'<td class="col-weak" style="color:'+(weakDays>0&&!ok?'#fca5a5':'var(--txt3)')+'">'+(ok?'✓':weakDays)+'</td>':'')+
       '</tr>';
   }).join('');
   const ncol = dates.length + 2 + (thr>0?1:0);
