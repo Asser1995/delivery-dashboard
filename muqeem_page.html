@@ -178,6 +178,50 @@ tbody tr:hover{background:var(--card2)}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:5px}
 ::-webkit-scrollbar-thumb:hover{background:var(--ac2)}
+@media print{
+  @page{size:A4;margin:8mm}
+  .no-print,.tabs,.toolbar,.rbtn,.modal-x,input,select,button{display:none!important}
+  html,body{background:#fff!important;color:#000!important;margin:0!important;padding:0!important;font-size:10px!important}
+  #gate{display:none!important}
+  .pane{background:#fff!important;border:none!important;color:#000!important;box-shadow:none!important;padding:0!important;margin:0!important}
+  .pane:not(.on){display:none!important}
+  .card,.kpi,.modal-box{background:#fff!important;border:1px solid #ccc!important;
+    color:#000!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid;padding:6px!important;margin:0 0 6px 0!important}
+  .card-t,.modal-name,.modal-id,.kpi-l,.kpi-v,.pi-l,.pi-v,
+  td,th,.b,.pill,.bar-row span,.bar-top span,.bar-top strong,h1,h2,h3,strong,em,span,div{color:#000!important}
+  .b{border:1px solid #999!important;background:#f5f5f5!important}
+  thead th{background:#eee!important;color:#000!important}
+  tbody tr{break-inside:avoid;page-break-inside:avoid}
+  /* رأس مدمج */
+  header{margin:0 0 6px 0!important;padding:4px 8px!important;border-bottom:2px solid #333!important;
+    background:#fff!important;display:flex!important;flex-direction:row!important;align-items:center!important;
+    justify-content:space-between!important;gap:8px!important;page-break-after:avoid}
+  .hdr-l,.hdr-r{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important}
+  .badge{background:#f5f5f5!important;border:1px solid #ccc!important;padding:2px 6px!important;
+    font-size:9px!important;border-radius:4px!important;color:#000!important}
+  /* KPIs */
+  .kpi-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:4px!important;margin-bottom:6px!important}
+  .kpi{padding:4px 6px!important;page-break-inside:avoid}
+  .kpi-v{font-size:14px!important;margin:1px 0!important}
+  .kpi-l{font-size:9px!important;font-weight:700!important}
+  .card-h{padding:4px 6px!important;border-bottom:1px solid #ccc!important;margin-bottom:4px!important}
+  .card-t{font-size:11px!important;font-weight:800!important}
+  table{font-size:8.5px!important;border-collapse:collapse!important;width:100%!important}
+  table th,table td{padding:3px!important;border:1px solid #ddd!important}
+  /* الملف الشخصي */
+  .modal{position:static!important;background:none!important;display:block!important;padding:0!important}
+  .modal-box{max-width:100%!important;max-height:none!important;border:none!important;padding:8px!important}
+  .pi{padding:2px 4px!important;font-size:9px!important;border:1px solid #eee!important}
+  .pi-l{font-size:8px!important;color:#555!important}
+  .pi-v{font-size:9px!important;font-weight:700!important}
+  /* لو المودال مفتوح أخفِ كل البقية */
+  body.modal-open .pane,body.modal-open header,body.modal-open .tabs{display:none!important}
+  /* الأشرطة */
+  .bar-row{margin-bottom:4px!important;page-break-inside:avoid}
+  .bar-top{font-size:9px!important}
+  .bar-track{height:6px!important;background:#eee!important}
+  .bar-fill{height:6px!important}
+}
 </style>
 </head>
 <body>
@@ -212,6 +256,7 @@ tbody tr:hover{background:var(--card2)}
       </div>
     </div>
     <div class="hdr-r">
+      <button class="rbtn no-print" onclick="window.print()">🖨️ طباعة التقرير</button>
       <a class="rbtn" href="index.html">🏠 الرئيسية</a>
       <button class="rbtn" onclick="logout()">🔒 خروج</button>
     </div>
@@ -316,7 +361,10 @@ tbody tr:hover{background:var(--card2)}
   <div class="modal-box">
     <div class="modal-h">
       <div><div class="modal-name" id="m-name">—</div><div class="modal-id" id="m-id">—</div></div>
-      <button class="modal-x" onclick="closeModal()">✕</button>
+      <div style="display:flex;gap:8px" class="no-print">
+        <button class="rbtn" onclick="window.print()" style="white-space:nowrap">🖨️ طباعة</button>
+        <button class="modal-x" onclick="closeModal()">✕</button>
+      </div>
     </div>
     <div class="modal-body"><div class="pi-grid" id="m-info"></div></div>
   </div>

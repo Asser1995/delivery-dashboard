@@ -38,6 +38,38 @@ body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
   color:#fff;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
 .rbtn:hover{opacity:.85;transform:translateY(-1px)}.rbtn:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .home-btn{background:var(--s2)!important;border:1px solid var(--brd)!important}
+@media print{
+  @page{size:A4;margin:8mm}
+  .no-print,.tabs,.tools,.rbtn,input,select,button{display:none!important}
+  html,body{background:#fff!important;color:#000!important;margin:0!important;padding:0!important;font-size:10px!important}
+  .pane{background:#fff!important;border:none!important;color:#000!important;box-shadow:none!important;padding:0!important;margin:0!important}
+  .pane:not(.on){display:none!important}
+  .card,.kpi{background:#fff!important;border:1px solid #ccc!important;
+    color:#000!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid;padding:6px!important;margin:0 0 6px 0!important}
+  .card-t,.kpi-l,.kpi-v,td,th,.b,.pill,h1,h2,h3,strong,em,span,div{color:#000!important}
+  .b{border:1px solid #999!important;background:#f5f5f5!important}
+  thead th{background:#eee!important;color:#000!important}
+  tbody tr{break-inside:avoid;page-break-inside:avoid}
+  /* رأس مدمج */
+  header{margin:0 0 6px 0!important;padding:4px 8px!important;border-bottom:2px solid #333!important;
+    background:#fff!important;display:flex!important;flex-direction:row!important;align-items:center!important;
+    justify-content:space-between!important;gap:8px!important;page-break-after:avoid}
+  .hdr-l,.hdr-r{display:flex!important;flex-direction:row!important;align-items:center!important;gap:6px!important}
+  .badge{background:#f5f5f5!important;border:1px solid #ccc!important;padding:2px 6px!important;
+    font-size:9px!important;border-radius:4px!important;color:#000!important}
+  /* KPIs grid */
+  .kpi-grid{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:4px!important;margin-bottom:6px!important}
+  .kpi{padding:4px 6px!important;page-break-inside:avoid}
+  .kpi-v{font-size:14px!important;margin:1px 0!important}
+  .kpi-l{font-size:9px!important;font-weight:700!important}
+  .kpi-sub{font-size:8px!important;color:#666!important}
+  /* charts grid */
+  .chart-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-bottom:6px!important}
+  .card-h{padding:4px 6px!important;border-bottom:1px solid #ccc!important;margin-bottom:4px!important}
+  .card-t{font-size:11px!important;font-weight:800!important}
+  table{font-size:9px!important;border-collapse:collapse!important;width:100%!important}
+  table th,table td{padding:3px!important;border:1px solid #ddd!important}
+}
 .tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r);padding:4px;overflow-x:auto}
 .tab{flex:1;min-width:max-content;padding:8px 14px;border:none;background:transparent;
   color:var(--txt3);font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;
@@ -82,6 +114,23 @@ td.n{color:var(--txt3);font-size:10px}
 .inp{padding:8px 12px;background:var(--s2);border:1px solid var(--brd);border-radius:var(--r2);
   color:var(--txt);font-family:'Cairo';font-size:12px;width:100%;max-width:280px}
 .toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.fi{padding:7px 11px;background:var(--s1);border:1px solid var(--brd);border-radius:var(--r2);
+  color:var(--txt);font-family:'Cairo',sans-serif;font-size:11.5px;outline:none;transition:.15s}
+.fi:focus{border-color:var(--acc)}.fi::placeholder{color:var(--txt3)}.fi.grow{flex:1;min-width:180px}
+/* فلاتر ملوّنة */
+.fsel{position:relative;display:inline-flex;align-items:center;gap:0}
+.fsel select{padding:7px 28px 7px 12px;background:var(--s1);border:1.5px solid var(--c,var(--brd));
+  border-radius:var(--r2);color:var(--txt);font-family:'Cairo',sans-serif;font-size:11.5px;
+  font-weight:600;outline:none;transition:.2s;cursor:pointer;appearance:none;-webkit-appearance:none}
+.fsel::after{content:'▾';position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  font-size:10px;color:var(--c,var(--txt2));pointer-events:none}
+.fsel select:hover{border-color:var(--c,var(--acc));
+  box-shadow:0 4px 14px color-mix(in srgb,var(--c,#888) 28%,transparent)}
+.fsel.has-value select{background-color:color-mix(in srgb,var(--c,#888) 14%,var(--s1));
+  color:var(--c);font-weight:700}
+.cls-badge{display:inline-flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:6px;font-weight:900;font-size:12px;color:#fff;
+  flex-shrink:0;box-shadow:0 2px 6px color-mix(in srgb,var(--c,#888) 40%,transparent)}
 .dot{width:9px;height:9px;border-radius:2px;display:inline-block}
 .daygrid{display:flex;gap:2px;flex-wrap:wrap;max-width:340px}
 .dcell{width:15px;height:15px;border-radius:3px;font-size:0;cursor:default}
@@ -113,6 +162,7 @@ td.n{color:var(--txt3);font-size:10px}
       <span id="kicon">📂</span> <span id="kbtn-text">تحديث البيانات</span>
     </button>
     <input type="file" id="kxlsx" accept=".xlsx,.xls" style="display:none" onchange="processKeetaExcel(event)">
+    <button class="rbtn home-btn no-print" onclick="window.print()" id="kt-print-btn">🖨️ <span id="kt-print-lbl">طباعة التقرير</span></button>
     <button class="rbtn home-btn" id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">EN</span></button>
     <button class="rbtn home-btn" onclick="goHome()"><span id="home-label">🏠 الرئيسية</span></button>
   </div>
@@ -124,6 +174,40 @@ td.n{color:var(--txt3);font-size:10px}
   <button class="tab" onclick="showTab('orders',this)"><span id="ktab-orders">📦 الطلبات</span></button>
 </nav>
 <div id="kalert" style="display:none;padding:10px 16px;margin-bottom:14px;border-radius:8px;font-size:12px;font-weight:600"></div>
+
+<!-- شريط الفلاتر المشترك لكل التبويبات -->
+<div class="card no-print" id="global-filters" style="margin-bottom:14px">
+  <div class="toolbar" style="padding:12px 16px;margin-bottom:0;align-items:center;flex-wrap:wrap">
+    <span style="font-size:11px;color:var(--txt3);font-weight:700" id="gf-label">🎯 الفلاتر:</span>
+    <span class="fsel" data-icon="🌆" style="--c:#3b82f6"><select id="gf-city" onchange="applyFilters()">
+      <option value="" id="gf-allcity">كل المدن</option>
+      <option value="Riyadh" id="gf-riy">🏙️ الرياض</option>
+      <option value="Medina" id="gf-med">🏛️ المدينة</option>
+    </select></span>
+    <span class="fsel" data-icon="🏆" style="--c:#22d3ee"><select id="gf-cls" onchange="applyFilters()">
+      <option value="" id="gf-allcls">كل الكلاسات</option>
+      <option value="A" id="gf-cls-a">🏆 A (ممتاز)</option>
+      <option value="B" id="gf-cls-b">⭐ B (جيد جداً)</option>
+      <option value="C" id="gf-cls-c">✓ C (مقبول)</option>
+      <option value="D" id="gf-cls-d">⚠️ D (ضعيف)</option>
+    </select></span>
+    <span class="fsel" data-icon="🚗" style="--c:#f97316"><select id="gf-veh" onchange="applyFilters()">
+      <option value="" id="gf-allveh">كل المركبات</option>
+      <option value="Car" id="gf-car">🚗 سيارة</option>
+      <option value="Bike" id="gf-bike">🛵 دراجة</option>
+    </select></span>
+    <span class="fsel" data-icon="📊" style="--c:#a855f7"><select id="gf-status" onchange="applyFilters()">
+      <option value="" id="gf-allstat">كل الحالات</option>
+      <option value="valid" id="gf-valid">✅ صالح</option>
+      <option value="invalid" id="gf-invalid">❌ غير صالح</option>
+      <option value="possible" id="gf-possible">🟡 ممكن</option>
+      <option value="hard" id="gf-hard">🟠 صعب</option>
+    </select></span>
+    <input class="fi grow" id="gf-search" placeholder="🔍 ابحث باسم السائق..." oninput="applyFilters()" style="min-width:160px">
+    <button class="rbtn" onclick="resetGlobalFilters()" style="background:var(--s2);border:1px solid var(--brd)">↺ <span id="gf-reset">تصفير</span></button>
+    <span class="pill yel" id="gf-count" style="margin-right:auto">—</span>
+  </div>
+</div>
 
 <!-- OVERVIEW -->
 <div class="pane on" id="pane-overview">
@@ -138,6 +222,10 @@ td.n{color:var(--txt3);font-size:10px}
       <div id="city-breakdown" style="padding:14px"></div>
     </div>
   </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-h"><div class="card-t" id="kt-classes">🏆 تصنيف <em>المناديب (Classes)</em></div><span class="pill yel" id="cls-count">—</span></div>
+    <div id="classes-breakdown" style="padding:14px"></div>
+  </div>
   <div class="card">
     <div class="card-h"><div class="card-t" id="kt-attention">⚠️ يحتاجون <em>انتباه</em> (غير صالح أو صعب)</div><span class="pill red" id="attention-count">—</span></div>
     <div class="tw"><table><thead><tr>
@@ -148,19 +236,10 @@ td.n{color:var(--txt3);font-size:10px}
 
 <!-- DRIVERS -->
 <div class="pane" id="pane-drivers">
-  <div class="toolbar">
-    <input class="inp" id="search" placeholder="🔍 ابحث بالاسم..." oninput="renderDrivers()">
-    <select class="sel" id="city-filter" onchange="renderDrivers()">
-      <option value="" id="opt-allcities">كل المدن</option><option value="Riyadh" id="opt-city-riyadh">الرياض</option><option value="Medina" id="opt-city-medina">المدينة</option>
-    </select>
-    <select class="sel" id="status-filter" onchange="renderDrivers()">
-      <option value="" id="opt-allstatus">كل الحالات</option><option value="صالح" id="opt-st-valid">صالح</option><option value="ممكن" id="opt-st-possible">ممكن</option><option value="صعب" id="opt-st-hard">صعب</option><option value="غير صالح" id="opt-st-invalid">غير صالح</option>
-    </select>
-  </div>
   <div class="card">
     <div class="card-h"><div class="card-t" id="kt-drivers">🚗 كل <em>السائقين</em></div><span class="pill yel" id="drivers-count">—</span></div>
     <div class="tw"><table><thead><tr>
-      <th class="td-l" id="kh-d-name">الاسم</th><th id="kh-d-city">المدينة</th><th id="kh-d-type">النوع</th><th id="kh-d-worked">داوم</th><th id="kh-d-valid">صالح</th><th id="kh-d-orders">طلبات</th><th id="kh-d-target">الهدف</th><th id="kh-d-rem">باقي طلب</th><th id="kh-d-perday">مطلوب/يوم</th><th>mod</th><th id="kh-d-face">Face</th><th id="kh-d-mand">إلزامي</th><th id="kh-d-status">الحالة</th>
+      <th id="kh-d-cls">الكلاس</th><th class="td-l" id="kh-d-name">الاسم</th><th id="kh-d-city">المدينة</th><th id="kh-d-type">النوع</th><th id="kh-d-worked">داوم</th><th id="kh-d-valid">صالح</th><th id="kh-d-orders">طلبات</th><th id="kh-d-target">الهدف</th><th id="kh-d-rem">باقي طلب</th><th id="kh-d-perday">مطلوب/يوم</th><th>mod</th><th id="kh-d-face">Face</th><th id="kh-d-mand">إلزامي</th><th id="kh-d-status">الحالة</th>
     </tr></thead><tbody id="drivers-body"></tbody></table></div>
   </div>
 </div>
@@ -378,6 +457,7 @@ const KEETA_LABELS = {
   ar: {
     'kt-attention': '⚠️ يحتاجون انتباه (غير صالح أو صعب)',
     'kt-citybd':    '🏙️ حسب المدينة',
+    'kt-classes':   '🏆 تصنيف المناديب (Classes)',
     'kt-drivers':   '🚗 كل السائقين',
     'kt-edge':      '⚠️ السائقون على الحافة',
     'kt-invalid':   '❌ السائقون غير الصالحين',
@@ -387,14 +467,33 @@ const KEETA_LABELS = {
     'ktab-orders':   '📦 الطلبات',
     'ktab-overview': '📊 نظرة عامة',
     'ktab-validity': '✅ الصلاحية',
-    'opt-allcities': 'كل المدن',
-    'opt-allstatus': 'كل الحالات',
+    'gf-label':      '🎯 الفلاتر:',
+    'gf-allcity':    'كل المدن',
+    'gf-riy':        '🏙️ الرياض',
+    'gf-med':        '🏛️ المدينة',
+    'gf-allcls':     'كل الكلاسات',
+    'gf-cls-a':      '🏆 A (ممتاز)',
+    'gf-cls-b':      '⭐ B (جيد جداً)',
+    'gf-cls-c':      '✓ C (مقبول)',
+    'gf-cls-d':      '⚠️ D (ضعيف)',
+    'gf-allveh':     'كل المركبات',
+    'gf-car':        '🚗 سيارة',
+    'gf-bike':       '🛵 دراجة',
+    'gf-allstat':    'كل الحالات',
+    'gf-valid':      '✅ صالح',
+    'gf-invalid':    '❌ غير صالح',
+    'gf-possible':   '🟡 ممكن',
+    'gf-hard':       '🟠 صعب',
+    'gf-reset':      'تصفير',
+    'kh-d-cls':      'الكلاس',
     'lang-label': 'EN',
-    'home-label': '🏠 الرئيسية'
+    'home-label': '🏠 الرئيسية',
+    'kt-print-lbl': '🖨️ طباعة التقرير'
   },
   en: {
     'kt-attention': '⚠️ Need Attention (Invalid or Hard)',
     'kt-citybd':    '🏙️ By City',
+    'kt-classes':   '🏆 Driver Classes',
     'kt-drivers':   '🚗 All Drivers',
     'kt-edge':      '⚠️ Drivers on the Edge',
     'kt-invalid':   '❌ Invalid Drivers',
@@ -404,10 +503,28 @@ const KEETA_LABELS = {
     'ktab-orders':   '📦 Orders',
     'ktab-overview': '📊 Overview',
     'ktab-validity': '✅ Validity',
-    'opt-allcities': 'All Cities',
-    'opt-allstatus': 'All Statuses',
+    'gf-label':      '🎯 Filters:',
+    'gf-allcity':    'All Cities',
+    'gf-riy':        '🏙️ Riyadh',
+    'gf-med':        '🏛️ Medina',
+    'gf-allcls':     'All Classes',
+    'gf-cls-a':      '🏆 A (Excellent)',
+    'gf-cls-b':      '⭐ B (Very Good)',
+    'gf-cls-c':      '✓ C (Acceptable)',
+    'gf-cls-d':      '⚠️ D (Weak)',
+    'gf-allveh':     'All Vehicles',
+    'gf-car':        '🚗 Car',
+    'gf-bike':       '🛵 Bike',
+    'gf-allstat':    'All Statuses',
+    'gf-valid':      '✅ Valid',
+    'gf-invalid':    '❌ Invalid',
+    'gf-possible':   '🟡 Possible',
+    'gf-hard':       '🟠 Hard',
+    'gf-reset':      'Reset',
+    'kh-d-cls':      'Class',
     'lang-label': 'ع',
-    'home-label': '🏠 Home'
+    'home-label': '🏠 Home',
+    'kt-print-lbl': '🖨️ Print Report'
   }
 };
 
@@ -428,6 +545,34 @@ function applyKeetaLang(){
 
 const DATA = {"drivers":[{"id":"1773656723060421","name":"Samir Khan","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":414,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":6,"need_daily":1.5,"need_daily_sheet":1.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":0,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1773656160237553","name":"Md Emon","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":393,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":27,"need_daily":6.75,"need_daily_sheet":6.75,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":0,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":0,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1773042368202013","name":"MUHAMMAD KHALID","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":545,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":0,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1772352251202998","name":"Fessal Alad","type":"Car","city":"Riyadh","worked":27,"valid":23,"orders":422,"face_id":100.0,"mod":1.0,"mandatory":1,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":0,"06/05":1,"07/05":1,"08/05":0,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":0,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":0,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1772265727060994","name":"MD SOJIB","type":"Car","city":"Riyadh","worked":27,"valid":27,"orders":382,"face_id":100.0,"mod":5.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":38,"need_daily":9.5,"need_daily_sheet":9.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1770665328237749","name":"SHAHIN ALAM","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":475,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":0,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1766585720257572","name":"Faysal Gazi","type":"Car","city":"Riyadh","worked":27,"valid":24,"orders":398,"face_id":92.3,"mod":2.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":22,"need_daily":5.5,"need_daily_sheet":5.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":0,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":0,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1766497285088752","name":"MD Sajjad","type":"Car","city":"Riyadh","worked":27,"valid":12,"orders":136,"face_id":100.0,"mod":-10.0,"mandatory":2,"min_orders":300,"target":420,"days_left":4,"remaining_orders":284,"need_daily":71.0,"need_daily_sheet":71.0,"met_min":false,"can_reach_min":true,"valid_status":false,"probability":"غير صالح","reasons":["غياب 2 أيام إلزامية","mod سالب (-10)"],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":0,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":0,"11/05":1,"12/05":1,"13/05":0,"14/05":1,"15/05":0,"16/05":0,"17/05":0,"18/05":0,"19/05":0,"20/05":0,"21/05":1,"22/05":0,"23/05":0,"24/05":0,"25/05":0,"26/05":0,"27/05":0,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1766495850060849","name":"MOHAMED KHAN","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":520,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":0,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1766494115480060","name":"SAJIT PATEL","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":298,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":122,"need_daily":30.5,"need_daily_sheet":30.5,"met_min":false,"can_reach_min":true,"valid_status":true,"probability":"ممكن","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":0,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":0,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1765711727257230","name":"ZAFAR IQBAL","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":378,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":42,"need_daily":10.5,"need_daily_sheet":10.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":0,"21/05":1,"22/05":1,"23/05":1,"24/05":0,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1765625418088261","name":"CHAUDHARY MEHMOOD","type":"Car","city":"Riyadh","worked":27,"valid":24,"orders":278,"face_id":100.0,"mod":2.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":142,"need_daily":35.5,"need_daily_sheet":35.5,"met_min":false,"can_reach_min":true,"valid_status":true,"probability":"ممكن","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":0,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":0,"20/05":1,"21/05":0,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1765264374202706","name":"JITENDRA YADAV","type":"Car","city":"Riyadh","worked":27,"valid":24,"orders":407,"face_id":100.0,"mod":2.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":13,"need_daily":3.25,"need_daily_sheet":3.25,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":0,"19/05":1,"20/05":0,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":0,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1765097848206673","name":"IKRAM AHMAD","type":"Car","city":"Riyadh","worked":27,"valid":24,"orders":489,"face_id":100.0,"mod":2.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":0,"20/05":0,"21/05":0,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764848391088001","name":"SAMEER SALEH","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":379,"face_id":100.0,"mod":3.0,"mandatory":1,"min_orders":300,"target":420,"days_left":4,"remaining_orders":41,"need_daily":10.25,"need_daily_sheet":10.25,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":0,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":0,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764839600088222","name":"Md Prng","type":"Car","city":"Riyadh","worked":27,"valid":24,"orders":275,"face_id":100.0,"mod":2.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":145,"need_daily":36.25,"need_daily_sheet":36.25,"met_min":false,"can_reach_min":true,"valid_status":true,"probability":"ممكن","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":0,"17/05":0,"18/05":1,"19/05":1,"20/05":1,"21/05":0,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764660264237440","name":"MD SAJAL","type":"Car","city":"Riyadh","worked":27,"valid":27,"orders":483,"face_id":100.0,"mod":5.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764626832088414","name":"Aminul Haque","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":452,"face_id":100.0,"mod":3.0,"mandatory":1,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":0,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":0,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764595115480059","name":"Md Shamim","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":338,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":82,"need_daily":20.5,"need_daily_sheet":20.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":0,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":0,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764588450206091","name":"Amir Khan","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":535,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":0,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764585565480645","name":"MD HASAN","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":424,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":0,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764581757480280","name":"Mohsen Mulla","type":"Car","city":"Riyadh","worked":27,"valid":24,"orders":273,"face_id":100.0,"mod":2.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":147,"need_daily":36.75,"need_daily_sheet":36.75,"met_min":false,"can_reach_min":true,"valid_status":true,"probability":"ممكن","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":0,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":0,"16/05":1,"17/05":0,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764509855480563","name":"Anamul Hoque","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":345,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":75,"need_daily":18.75,"need_daily_sheet":18.75,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":0,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":0,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764252238060117","name":"SHAH PORAN","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":407,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":13,"need_daily":3.25,"need_daily_sheet":3.25,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":0,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764251379257113","name":"ELHADI ALI","type":"Car","city":"Riyadh","worked":27,"valid":27,"orders":354,"face_id":100.0,"mod":5.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":66,"need_daily":16.5,"need_daily_sheet":16.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764234901206130","name":"RAM CHANDRA","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":356,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":64,"need_daily":16.0,"need_daily_sheet":16.0,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":0,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":0,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1764233009202779","name":"MANOJ KUMAR","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":465,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":0,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1761485313237159","name":"MUHAMMAD ALI","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":382,"face_id":100.0,"mod":4.0,"mandatory":1,"min_orders":300,"target":420,"days_left":4,"remaining_orders":38,"need_daily":9.5,"need_daily_sheet":9.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":0,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1759658692202814","name":"Md Shanto","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":355,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":65,"need_daily":16.25,"need_daily_sheet":16.25,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":0,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1751526092480454","name":"Shahansha Babar","type":"Car","city":"Riyadh","worked":27,"valid":25,"orders":525,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":0,"23/05":0,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1748678456088477","name":"Mohammed Khuris","type":"Car","city":"Riyadh","worked":27,"valid":23,"orders":362,"face_id":100.0,"mod":1.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":58,"need_daily":14.5,"need_daily_sheet":14.5,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":0,"11/05":0,"12/05":0,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1739626259237214","name":"Mantu Deb","type":"Car","city":"Riyadh","worked":27,"valid":26,"orders":455,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":300,"target":420,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":1,"07/05":0,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1777477453257814","name":"Muhammad Asghar","type":"bike","city":"Medina","worked":27,"valid":25,"orders":632,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":0,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1777476731060103","name":"MUHAMMAD TUFAIL","type":"bike","city":"Medina","worked":27,"valid":26,"orders":548,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1771291491237795","name":"Md Alam","type":"bike","city":"Medina","worked":27,"valid":26,"orders":437,"face_id":80.0,"mod":4.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":false,"probability":"غير صالح","reasons":["Face ID 80%"],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1767977646237734","name":"Irfan Naseer","type":"bike","city":"Medina","worked":27,"valid":24,"orders":415,"face_id":100.0,"mod":2.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":0,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":0,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1763300049202064","name":"Farhan Ali","type":"bike","city":"Medina","worked":27,"valid":25,"orders":506,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":0,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1739217113202176","name":"Muddasar Arif","type":"bike","city":"Medina","worked":27,"valid":23,"orders":419,"face_id":100.0,"mod":1.0,"mandatory":1,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":0,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":0,"25/05":0,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1739048261202585","name":"Muhammad Hussain","type":"bike","city":"Medina","worked":27,"valid":26,"orders":428,"face_id":100.0,"mod":4.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1737022078060937","name":"Noman Haider","type":"bike","city":"Medina","worked":27,"valid":25,"orders":447,"face_id":100.0,"mod":3.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":0,"need_daily":0,"need_daily_sheet":null,"met_min":true,"can_reach_min":true,"valid_status":true,"probability":"صالح","reasons":[],"days":{"01/05":1,"02/05":1,"03/05":1,"04/05":1,"05/05":1,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":0,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1777983520060121","name":"Mohammad Jamal","type":"bike","city":"Medina","worked":22,"valid":22,"orders":349,"face_id":null,"mod":3.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":51,"need_daily":12.75,"need_daily_sheet":12.75,"met_min":false,"can_reach_min":true,"valid_status":true,"probability":"ممكن","reasons":[],"days":{"01/05":null,"02/05":null,"03/05":null,"04/05":null,"05/05":null,"06/05":1,"07/05":1,"08/05":1,"09/05":1,"10/05":1,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":1,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}},{"id":"1778065093088302","name":"Md Alal","type":"bike","city":"Medina","worked":22,"valid":19,"orders":304,"face_id":null,"mod":1.0,"mandatory":0,"min_orders":400,"target":400,"days_left":4,"remaining_orders":96,"need_daily":24.0,"need_daily_sheet":24.0,"met_min":false,"can_reach_min":true,"valid_status":true,"probability":"ممكن","reasons":[],"days":{"01/05":null,"02/05":null,"03/05":null,"04/05":null,"05/05":null,"06/05":0,"07/05":1,"08/05":1,"09/05":1,"10/05":0,"11/05":1,"12/05":1,"13/05":1,"14/05":1,"15/05":1,"16/05":1,"17/05":0,"18/05":1,"19/05":1,"20/05":1,"21/05":1,"22/05":1,"23/05":1,"24/05":1,"25/05":1,"26/05":1,"27/05":1,"28/05":null,"29/05":null,"30/05":null,"31/05":null}}],"meta":{"Riyadh":{"last_day":27,"count":32,"min_orders":300,"target":420},"Medina":{"last_day":27,"count":10,"min_orders":400,"target":400}},"dates":["01/05","02/05","03/05","04/05","05/05","06/05","07/05","08/05","09/05","10/05","11/05","12/05","13/05","14/05","15/05","16/05","17/05","18/05","19/05","20/05","21/05","22/05","23/05","24/05","25/05","26/05","27/05","28/05","29/05","30/05","31/05"],"face_min":90.0,"total_days":31};
 function cityName(c){ return LANG==='ar' ? (CITY_AR[c]||c) : (CITY_EN[c]||c); }
+
+// نظام التصنيف (Classes) حسب المدينة وعدد الطلبات الشهري
+function driverClass(d){
+  const o = d.orders || 0;
+  if (d.city === 'Riyadh') {
+    if (o >= 550) return 'A';
+    if (o >= 420) return 'B';
+    if (o >= 300) return 'C';
+    return 'D';
+  } else { // Medina
+    if (o >= 600) return 'A';
+    if (o >= 500) return 'B';
+    if (o >= 400) return 'C';
+    return 'D';
+  }
+}
+const CLS_COLORS = { A:'#22c55e', B:'#3b82f6', C:'#eab308', D:'#ef4444' };
+const CLS_LABELS_AR = {
+  A:'🏆 ممتاز (A)', B:'⭐ جيد جداً (B)', C:'✓ مقبول (C)', D:'⚠️ ضعيف (D)'
+};
+const CLS_LABELS_EN = {
+  A:'🏆 Excellent (A)', B:'⭐ Very Good (B)', C:'✓ Acceptable (C)', D:'⚠️ Weak (D)'
+};
+function clsLabel(c){ return (LANG==='ar'?CLS_LABELS_AR:CLS_LABELS_EN)[c] || c; }
+function clsThresholds(city){
+  if(city==='Riyadh') return {A:550,B:420,C:300};
+  return {A:600,B:500,C:400};
+}
 // status stored in Arabic in data → map to display
 function probKey(p){
   if(p==='صالح') return 'st_valid';
@@ -449,56 +594,6 @@ function toggleLang(){
   LANG = (LANG==='ar') ? 'en' : 'ar';
   applyKeetaLang();
   renderAll();
-}
-function applyKeetaLang(){
-  document.documentElement.lang = LANG;
-  document.documentElement.dir = (LANG==='ar') ? 'rtl' : 'ltr';
-  const set = (id,k)=>{ const e=document.getElementById(id); if(e) e.textContent = KT(k); };
-  set('lang-label', LANG==='ar'?'EN':'ع');
-  set('k-subtitle','subtitle'); set('k-lastday-lbl','last_day'); set('k-remaining-lbl','remaining');
-  set('k-dayunit','day_unit'); set('home-label','home');
-  const kbtnText = document.getElementById('kbtn-text'); if(kbtnText) kbtnText.textContent = KT('update');
-  // tabs
-  set('ktab-overview','tab_overview'); set('ktab-drivers','tab_drivers');
-  set('ktab-validity','tab_validity'); set('ktab-orders','tab_orders');
-  // card titles with <em>
-  const setEm = (id,a,b,extra)=>{ const e=document.getElementById(id); if(e) e.innerHTML = KT(a)+' <em>'+KT(b)+'</em>'+(extra?' '+KT(extra):''); };
-  setEm('kt-validity','ov_validity_a','ov_validity_b');
-  setEm('kt-citybd','ov_city_a','ov_city_b');
-  setEm('kt-attention','ov_attention_a','ov_attention_b','ov_attention_note');
-  setEm('kt-drivers','drivers_t_a','drivers_t_b');
-  setEm('kt-invalid','inv_t_a','inv_t_b','inv_note_extra');
-  setEm('kt-edge','edge_t_a','edge_t_b','edge_note');
-  setEm('kt-orders','orders_t_a','orders_t_b','orders_t_note');
-  set('kd-invalid','inv_desc'); set('kd-edge','edge_desc'); set('kd-orders','orders_desc');
-  // search + selects
-  const srch=document.getElementById('search'); if(srch) srch.placeholder = KT('search_ph');
-  set('opt-allcities','all_cities'); set('opt-riyadh','st_riyadh_x');
-  const oc=document.getElementById('opt-allcities'); if(oc) oc.textContent=KT('all_cities');
-  const ocr=document.getElementById('opt-city-riyadh'); if(ocr) ocr.textContent=cityName('Riyadh');
-  const ocm=document.getElementById('opt-city-medina'); if(ocm) ocm.textContent=cityName('Medina');
-  set('opt-allstatus','all_status');
-  const os1=document.getElementById('opt-st-valid'); if(os1) os1.textContent=KT('st_valid');
-  const os2=document.getElementById('opt-st-possible'); if(os2) os2.textContent=KT('st_possible');
-  const os3=document.getElementById('opt-st-hard'); if(os3) os3.textContent=KT('st_hard');
-  const os4=document.getElementById('opt-st-invalid'); if(os4) os4.textContent=KT('st_invalid');
-  // table headers — attention
-  set('kh-a-name','th_name'); set('kh-a-city','th_city'); set('kh-a-valid','th_valid');
-  set('kh-a-orders','th_orders'); set('kh-a-target','th_target'); set('kh-a-status','th_status'); set('kh-a-reason','th_reason');
-  // drivers
-  set('kh-d-name','th_name'); set('kh-d-city','th_city'); set('kh-d-type','th_type'); set('kh-d-worked','th_worked');
-  set('kh-d-valid','th_valid'); set('kh-d-orders','th_orders'); set('kh-d-target','th_target'); set('kh-d-rem','th_remaining');
-  set('kh-d-perday','th_perday'); set('kh-d-face','th_face'); set('kh-d-mand','th_mandatory'); set('kh-d-status','th_status');
-  // invalid
-  set('kh-i-name','th_name'); set('kh-i-city','th_city'); set('kh-i-mand','th_mandatory'); set('kh-i-reason','th_reason');
-  // edge
-  set('kh-e-name','th_name'); set('kh-e-city','th_city'); set('kh-e-orders','th_orders'); set('kh-e-min','th_min');
-  set('kh-e-remmin','th_rem_min'); set('kh-e-perday','th_perday'); set('kh-e-prob','th_probability');
-  // orders
-  set('kh-o-name','th_name'); set('kh-o-city','th_city'); set('kh-o-cur','th_cur_orders'); set('kh-o-target','th_target');
-  set('kh-o-rem','th_rem'); set('kh-o-daysleft','th_days_left'); set('kh-o-need','th_need_daily'); set('kh-o-rating','th_rating');
-  // modal day title + legend
-  set('m-days-title','p_days_title'); set('leg-valid','leg_valid'); set('leg-invalid','leg_invalid'); set('leg-noshow','leg_noshow');
 }
 
 function showTab(id, btn){
@@ -529,14 +624,65 @@ function renderAll(){
   const last = Math.max(...Object.values(DATA.meta).map(m=>m.last_day));
   document.getElementById('last-day').textContent = last+'/05';
   document.getElementById('days-left').textContent = DATA.total_days - last;
+  applyFilters();
+}
+
+// ───── نظام الفلترة المشترك ─────
+const __filters = { city:'', cls:'', veh:'', status:'', q:'' };
+
+function filteredDrivers(){
+  const f = __filters;
+  return DATA.drivers.filter(d=>{
+    if (f.city && d.city !== f.city) return false;
+    if (f.cls && driverClass(d) !== f.cls) return false;
+    if (f.veh && d.type !== f.veh) return false;
+    if (f.status) {
+      const pk = probKey(d.probability);
+      if (f.status==='valid'    && pk!=='valid')    return false;
+      if (f.status==='invalid'  && pk!=='invalid')  return false;
+      if (f.status==='possible' && pk!=='possible') return false;
+      if (f.status==='hard'     && pk!=='hard')     return false;
+    }
+    if (f.q && !d.name.toLowerCase().includes(f.q.toLowerCase())) return false;
+    return true;
+  });
+}
+
+function markFilter(sel){
+  const wrap = sel.parentElement;
+  if (wrap && wrap.classList) wrap.classList.toggle('has-value', !!sel.value);
+}
+
+function applyFilters(){
+  __filters.city = (document.getElementById('gf-city')||{}).value||'';
+  __filters.cls  = (document.getElementById('gf-cls') ||{}).value||'';
+  __filters.veh  = (document.getElementById('gf-veh') ||{}).value||'';
+  __filters.status = (document.getElementById('gf-status')||{}).value||'';
+  __filters.q    = (document.getElementById('gf-search')||{}).value||'';
+  // علامات الفلاتر النشطة
+  ['gf-city','gf-cls','gf-veh','gf-status'].forEach(id=>{
+    const el=document.getElementById(id); if(el) markFilter(el);
+  });
+  // تحديث العدّاد
+  const list = filteredDrivers();
+  const cc = document.getElementById('gf-count');
+  if (cc) cc.textContent = list.length+' '+(typeof KT==='function'?KT('driver_unit'):'سائق');
+  // إعادة رسم كل التبويبات
   renderOverview();
   renderDrivers();
   renderValidity();
   renderOrders();
 }
 
+function resetGlobalFilters(){
+  ['gf-city','gf-cls','gf-veh','gf-status','gf-search'].forEach(id=>{
+    const el=document.getElementById(id); if(el){el.value=''; if(el.parentElement)el.parentElement.classList.remove('has-value');}
+  });
+  applyFilters();
+}
+
 function renderOverview(){
-  const ds = DATA.drivers;
+  const ds = filteredDrivers();
   const valid = ds.filter(d=>d.valid_status).length;
   const invalid = ds.length - valid;
   const metMin = ds.filter(d=>d.met_min).length;
@@ -566,6 +712,37 @@ function renderOverview(){
     return '<div style="background:var(--s2);border:1px solid var(--brd);border-radius:8px;padding:12px;margin-bottom:10px"><div style="font-weight:700;font-size:13px;margin-bottom:8px">'+cityName(c)+' <span style="color:var(--txt3);font-size:10px">('+KT('target_label')+' '+m.target+' | '+KT('min_label')+' '+m.min_orders+')</span></div><div style="display:flex;gap:14px;font-size:11px"><span>👥 <strong>'+m.count+'</strong></span><span style="color:var(--grn2)">✅ <strong>'+cvalid+'</strong></span><span style="color:var(--blu2)">📦 <strong>'+cmet+'</strong> '+KT('kpi_metmin')+'</span></div></div>';
   }).join('');
 
+  // Classes breakdown
+  const clsGroups = {A:[],B:[],C:[],D:[]};
+  ds.forEach(d=> clsGroups[driverClass(d)].push(d));
+  const ccc = document.getElementById('cls-count'); if(ccc) ccc.textContent = ds.length+' '+KT('driver_unit');
+  const isAr = (LANG==='ar');
+  const clsHtml = ['A','B','C','D'].map(c=>{
+    const arr = clsGroups[c];
+    const cnt = arr.length;
+    const pct = ds.length ? Math.round(cnt/ds.length*100) : 0;
+    const avgO = cnt ? Math.round(arr.reduce((s,d)=>s+d.orders,0)/cnt) : 0;
+    // عدّ حسب المدينة
+    const inRiy = arr.filter(d=>d.city==='Riyadh').length;
+    const inMed = arr.filter(d=>d.city==='Medina').length;
+    // عتبات لكل مدينة
+    const tR = clsThresholds('Riyadh'), tM = clsThresholds('Medina');
+    const thrTxt = c==='D'
+      ? (isAr ? 'الرياض < '+tR.C+' | المدينة < '+tM.C : 'Riyadh < '+tR.C+' | Medina < '+tM.C)
+      : (isAr ? 'الرياض ≥ '+tR[c]+' | المدينة ≥ '+tM[c] : 'Riyadh ≥ '+tR[c]+' | Medina ≥ '+tM[c]);
+    return '<div style="background:var(--s2);border:1px solid var(--brd);border-right:4px solid '+CLS_COLORS[c]+';border-radius:8px;padding:12px;margin-bottom:10px;cursor:pointer" onclick="document.getElementById(\'gf-cls\').value=\''+c+'\';applyFilters();showTab(\'drivers\',document.querySelectorAll(\'.tab\')[1])">'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'+
+        '<span class="cls-badge" style="--c:'+CLS_COLORS[c]+';background:'+CLS_COLORS[c]+';width:32px;height:32px;font-size:15px">'+c+'</span>'+
+        '<div style="flex:1"><div style="font-weight:800;font-size:13px;color:'+CLS_COLORS[c]+'">'+clsLabel(c)+'</div>'+
+        '<div style="font-size:10px;color:var(--txt3)">'+thrTxt+' '+(isAr?'طلب/شهر':'orders/month')+'</div></div>'+
+        '<div style="text-align:left"><div style="font-size:20px;font-weight:900;color:'+CLS_COLORS[c]+'">'+cnt+'</div>'+
+        '<div style="font-size:10px;color:var(--txt3)">'+pct+'%</div></div>'+
+      '</div>'+
+      '<div style="display:flex;gap:14px;font-size:11px;color:var(--txt2)"><span>🏙️ '+(isAr?'الرياض':'Riyadh')+': <strong>'+inRiy+'</strong></span><span>🏛️ '+(isAr?'المدينة':'Medina')+': <strong>'+inMed+'</strong></span>'+(cnt>0?'<span>📦 '+(isAr?'متوسط الطلبات':'Avg orders')+': <strong>'+avgO+'</strong></span>':'')+'</div>'+
+      '</div>';
+  }).join('');
+  document.getElementById('classes-breakdown').innerHTML = clsHtml;
+
   // Attention table
   const att = ds.filter(d=>!d.valid_status || d.probability==='صعب').sort((a,b)=>a.valid_status-b.valid_status);
   document.getElementById('attention-count').textContent = att.length+' '+KT('driver_unit');
@@ -587,14 +764,12 @@ function row(d,i){
 }
 
 function renderDrivers(){
-  const q = (document.getElementById('search').value||'').toLowerCase();
-  const cf = document.getElementById('city-filter').value;
-  const sf = document.getElementById('status-filter').value;
-  let ds = DATA.drivers.filter(d=>(!q||d.name.toLowerCase().includes(q))&&(!cf||d.city===cf)&&(!sf||d.probability===sf));
-  ds = ds.sort((a,b)=>b.orders-a.orders);
-  document.getElementById('drivers-count').textContent = ds.length+' سائق';
-  document.getElementById('drivers-body').innerHTML = ds.length ? ds.map(d=>
-    '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+  let ds = filteredDrivers().sort((a,b)=>b.orders-a.orders);
+  document.getElementById('drivers-count').textContent = ds.length+' '+KT('driver_unit');
+  document.getElementById('drivers-body').innerHTML = ds.length ? ds.map(d=>{
+    const c = driverClass(d);
+    return '<tr onclick="openProfile(\''+d.id+'\')" style="cursor:pointer">'+
+    '<td><span class="cls-badge" style="--c:'+CLS_COLORS[c]+';background:'+CLS_COLORS[c]+'">'+c+'</span></td>'+
     '<td class="td-l td-name">'+d.name+'</td>'+
     '<td style="color:var(--acc);font-size:10px">'+cityName(d.city)+'</td>'+
     '<td style="font-size:10px;color:var(--txt3)">'+(d.type||'—')+'</td>'+
@@ -607,12 +782,12 @@ function renderDrivers(){
     '<td>'+modBadge(d.mod)+'</td>'+
     '<td>'+faceBadge(d.face_id)+'</td>'+
     '<td>'+(d.mandatory>1?'<span class="b b-bad">'+d.mandatory+'</span>':d.mandatory)+'</td>'+
-    '<td>'+statusBadge(d.probability)+'</td></tr>'
-  ).join('') : '<tr><td colspan="13" class="empty">'+KT('no_results')+'</td></tr>';
+    '<td>'+statusBadge(d.probability)+'</td></tr>';
+  }).join('') : '<tr><td colspan="14" class="empty">'+KT('no_results')+'</td></tr>';
 }
 
 function renderValidity(){
-  const ds = DATA.drivers;
+  const ds = filteredDrivers();
   const valid = ds.filter(d=>d.valid_status);
   const invalid = ds.filter(d=>!d.valid_status);
   const edge = ds.filter(d=>d.valid_status && !d.met_min);
@@ -648,7 +823,7 @@ function renderValidity(){
 }
 
 function renderOrders(){
-  const ds = [...DATA.drivers].sort((a,b)=>b.need_daily-a.need_daily);
+  const ds = [...filteredDrivers()].sort((a,b)=>b.need_daily-a.need_daily);
   document.getElementById('orders-body').innerHTML = ds.map((d,i)=>{
     let rate;
     if(d.remaining_orders<=0) rate='<span class="b b-ok">✅ '+KT('reached')+'</span>';
