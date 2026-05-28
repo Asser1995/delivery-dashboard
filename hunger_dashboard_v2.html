@@ -117,6 +117,40 @@ tbody td{padding:8px 12px;text-align:center;vertical-align:middle}
   box-shadow:0 0 0 3px color-mix(in srgb,var(--c,#888) 22%,transparent)}
 .fsel.has-value select{background-color:color-mix(in srgb,var(--c,#888) 14%,var(--s1));
   color:var(--c);font-weight:700}
+/* جداول المصفوفة المدمجة - كل الأيام بدون تمرير */
+.matrix{width:100%;border-collapse:collapse;table-layout:fixed}
+.matrix th,.matrix td{padding:2px 1px;text-align:center;font-size:9px;overflow:hidden;
+  border:1px solid var(--brd);line-height:1.25}
+.matrix thead th{background:var(--s2);color:var(--txt3);font-size:8.5px;font-weight:700;
+  position:sticky;top:0;z-index:2}
+.matrix .col-name{width:118px;min-width:118px;max-width:118px;text-align:right;
+  position:sticky;right:0;background:var(--s1);z-index:1;padding:3px 5px;
+  font-size:9.5px;font-weight:600;border-left:2px solid var(--brd2)}
+.matrix thead .col-name{background:var(--s2);z-index:3}
+.matrix .col-day{width:auto}
+.matrix .col-sum{width:30px;min-width:30px;background:var(--s2);font-weight:800;color:var(--acc);font-size:9.5px}
+.matrix .col-weak{width:26px;min-width:26px;background:rgba(239,68,68,.08);font-weight:800;font-size:9.5px}
+.matrix .nm-sub{font-size:8px;color:var(--txt3);font-weight:400}
+.matrix tbody tr{cursor:pointer}
+.matrix tbody tr:hover td{background:var(--s2)}
+.matrix tbody tr:hover .col-name{background:var(--s3)}
+.cell-weak{background:rgba(239,68,68,.26)!important;color:#fca5a5;font-weight:800}
+.cell-good{background:rgba(34,197,94,.16);color:#86efac}
+.cell-mid{color:var(--txt2)}
+.cell-low{color:var(--txt3)}
+.cell-off{color:var(--s3)}
+.matrix-toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;
+  background:var(--s1);border:1.5px solid var(--brd2);border-radius:var(--r2);
+  font-size:11px;font-weight:700;cursor:pointer;transition:.2s;color:var(--txt2);user-select:none}
+.matrix-toggle:hover{border-color:#ef4444;color:#ef4444}
+.matrix-toggle.on{background:rgba(239,68,68,.15);border-color:#ef4444;color:#fca5a5}
+.matrix-toggle .dot{width:14px;height:14px;border-radius:4px;border:1.5px solid currentColor;
+  display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.matrix-toggle.on .dot{background:#ef4444;border-color:#ef4444;color:#fff}
+@media(max-width:760px){
+  .matrix-scroll{overflow-x:auto}
+  .matrix{min-width:680px}
+}
 @media print{
   .no-print,.tabs,.tools,.toolbar,.rbtn,.modal-x{display:none!important}
   body,.dash{background:#fff!important;color:#000!important}
@@ -433,9 +467,43 @@ tbody td{padding:8px 12px;text-align:center;vertical-align:middle}
         <option value="20">20 طلب</option>
       </select></span>
       <span style="font-size:10.5px;color:var(--txt3)" id="do-hint">الخلايا الحمراء = طلبات أقل من الحد · الفارغة = لم يداوم</span>
+      <span class="matrix-toggle" id="do-only" onclick="toggleDoOnly()"><span class="dot" id="do-only-dot"></span><span id="do-only-lbl">إظهار المخالفين فقط</span></span>
     </div>
-    <div style="overflow-x:auto;max-height:560px;overflow-y:auto" id="do-wrap">
-      <table id="do-table" style="font-size:11px"><thead id="do-thead"></thead><tbody id="do-tbody"></tbody></table>
+    <div class="matrix-scroll" id="do-wrap">
+      <table id="do-table" class="matrix"><thead id="do-thead"></thead><tbody id="do-tbody"></tbody></table>
+    </div>
+  </div>
+
+  <!-- جدول الساعات اليومية الكامل (H.DELY) -->
+  <div class="card" style="margin-top:14px">
+    <div class="card-h">
+      <div class="card-t" id="ct-dailyhours">⏱️ الساعات <em>اليومية لكل مندوب</em></div>
+      <span class="pill yel" id="dh-count">—</span>
+    </div>
+    <div class="toolbar" style="padding:12px 16px 4px;margin-bottom:0;align-items:center">
+      <input class="fi grow" id="dh-search" placeholder="🔍 ابحث باسم المندوب..." oninput="renderDailyHours()">
+      <span class="fsel" data-icon="🌆" style="--c:#3b82f6"><select id="dh-city" onchange="renderDailyHours();markFilter(this)"><option value="" id="dh-allcity">كل المدن</option></select></span>
+      <span class="fsel" data-icon="🚗" style="--c:#f97316"><select id="dh-veh" onchange="renderDailyHours();markFilter(this)">
+        <option value="" id="dh-allveh">كل المركبات</option>
+        <option value="car" id="dh-car">🚗 سيارة</option>
+        <option value="bike" id="dh-bike">🛵 دباب</option>
+      </select></span>
+      <span class="fsel" data-icon="👤" style="--c:#a855f7"><select id="dh-sup" onchange="renderDailyHours();markFilter(this)"><option value="" id="dh-allsup">كل المشرفين</option></select></span>
+    </div>
+    <div class="toolbar" style="padding:4px 16px 12px;margin-bottom:0;align-items:center;border-bottom:1px solid var(--brd)">
+      <span style="font-size:11px;color:var(--txt3);font-weight:700" id="dh-hl-label">⚠️ تمييز الأيام الأقل من:</span>
+      <span class="fsel" data-icon="⏱️" style="--c:#ef4444"><select id="dh-threshold" onchange="renderDailyHours()">
+        <option value="0">بدون تمييز</option>
+        <option value="6">6 ساعات</option>
+        <option value="8" selected>8 ساعات</option>
+        <option value="10">10 ساعات</option>
+        <option value="12">12 ساعة</option>
+      </select></span>
+      <span style="font-size:10.5px;color:var(--txt3)" id="dh-hint">الخلايا الحمراء = ساعات أقل من الحد · الفارغة = لم يداوم</span>
+      <span class="matrix-toggle" id="dh-only" onclick="toggleDhOnly()"><span class="dot" id="dh-only-dot"></span><span id="dh-only-lbl">إظهار المخالفين فقط</span></span>
+    </div>
+    <div class="matrix-scroll" id="dh-wrap">
+      <table id="dh-table" class="matrix"><thead id="dh-thead"></thead><tbody id="dh-tbody"></tbody></table>
     </div>
   </div>
 </div>
@@ -566,6 +634,10 @@ const I18N = {
     ct_dailyorders_a:'📅 الطلبات', ct_dailyorders_b:'اليومية لكل مندوب',
     do_search_ph:'🔍 ابحث باسم المندوب...', do_hl_label:'⚠️ تمييز الأيام الأقل من:',
     do_hint:'الخلايا الحمراء = طلبات أقل من الحد · الفارغة = لم يداوم', do_nohl:'بدون تمييز',
+    ct_dailyhours_a:'⏱️ الساعات', ct_dailyhours_b:'اليومية لكل مندوب',
+    dh_search_ph:'🔍 ابحث باسم المندوب...', dh_hl_label:'⚠️ تمييز الأيام الأقل من:',
+    dh_hint:'الخلايا الحمراء = ساعات أقل من الحد · الفارغة = لم يداوم',
+    only_violators:'إظهار المخالفين فقط',
     subtitle:'داشبورد المتابعة الحية',
     // KPIs overview
     kpi_daily_avg:'متوسط يومي', kpi_daily_sub:'طلب/يوم', kpi_cities:'المدن', kpi_cities_sub:'مدينة فعّالة',
@@ -651,6 +723,10 @@ const I18N = {
     ct_dailyorders_a:'📅 Daily', ct_dailyorders_b:'Orders per Driver',
     do_search_ph:'🔍 Search driver name...', do_hl_label:'⚠️ Highlight days below:',
     do_hint:'Red cells = orders below threshold · Empty = did not work', do_nohl:'No highlight',
+    ct_dailyhours_a:'⏱️ Daily', ct_dailyhours_b:'Hours per Driver',
+    dh_search_ph:'🔍 Search driver name...', dh_hl_label:'⚠️ Highlight days below:',
+    dh_hint:'Red cells = hours below threshold · Empty = did not work',
+    only_violators:'Show violators only',
     subtitle:'Live Monitoring Dashboard',
     kpi_daily_avg:'Daily Average', kpi_daily_sub:'orders/day', kpi_cities:'Cities', kpi_cities_sub:'active cities',
     kpi_drivers:'Drivers', kpi_drivers_sub:'active drivers', kpi_orders:'Total Orders', kpi_orders_sub:'this month',
@@ -777,6 +853,14 @@ function applyLang(){
   set('do-car','dopt_car'); set('do-bike','dopt_bike'); set('do-allsup','lbl_allsup');
   const dth=document.getElementById('do-threshold');
   if(dth && dth.options.length) dth.options[0].textContent=T('do_nohl');
+  // daily hours section
+  const dhs=document.getElementById('dh-search'); if(dhs) dhs.placeholder=T('dh_search_ph');
+  set('dh-hl-label','dh_hl_label'); set('dh-hint','dh_hint');
+  set('dh-allcity','lbl_allcity'); set('dh-allveh','dopt_allveh');
+  set('dh-car','dopt_car'); set('dh-bike','dopt_bike'); set('dh-allsup','lbl_allsup');
+  const dht=document.getElementById('dh-threshold');
+  if(dht && dht.options.length) dht.options[0].textContent=T('do_nohl');
+  set('do-only-lbl','only_violators'); set('dh-only-lbl','only_violators');
   set('opt-allstatus','opt_allstatus'); set('opt-achieved','opt_achieved'); set('opt-notachieved','opt_notachieved');
   set('dopt-allveh','dopt_allveh'); set('dopt-car','dopt_car'); set('dopt-bike','dopt_bike');
   // Goals card titles (with <em>) + descriptions
@@ -810,6 +894,7 @@ function applyLang(){
   setCard('ct-topabsent','ct_topabsent_a','ct_topabsent_b');
   setCard('ct-lowacc','ct_lowacc_a','ct_lowacc_b');
   setCard('ct-dailyorders','ct_dailyorders_a','ct_dailyorders_b');
+  setCard('ct-dailyhours','ct_dailyhours_a','ct_dailyhours_b');
   setCard('ct-supperf','ct_supperf_a','ct_supperf_b');
   setCard('ct-ai','ct_ai_a','ct_ai_b');
   set('pill-top10','pill_completed'); set('pill-low10','pill_completed');
@@ -1472,11 +1557,18 @@ function renderPerformance() {
     d => d.acceptance_rate + '%', ['#ef4444','#f97316','#eab308']
   );
   renderDailyOrders();
+  renderDailyHours();
 }
 
+let __doOnly = false;
+function toggleDoOnly(){
+  __doOnly = !__doOnly;
+  const t=document.getElementById('do-only'); if(t) t.classList.toggle('on',__doOnly);
+  const dot=document.getElementById('do-only-dot'); if(dot) dot.textContent=__doOnly?'✓':'';
+  renderDailyOrders();
+}
 function renderDailyOrders(){
   const isAr = (typeof lang==='undefined' || lang==='ar');
-  // populate dropdowns
   const citySel=document.getElementById('do-city'), supSel=document.getElementById('do-sup');
   if (citySel && citySel.options.length<=1){
     const cities=[...new Set(DATA.drivers.map(d=>d.city).filter(Boolean))].sort();
@@ -1494,10 +1586,7 @@ function renderDailyOrders(){
   const fSup=(document.getElementById('do-sup')||{}).value||'';
   const thr=parseInt((document.getElementById('do-threshold')||{}).value||'0',10);
 
-  const dates = (DATA.daily_dates||[]).filter(d=>{
-    // أبقِ الأيام التي فيها بيانات لأي سائق
-    return DATA.drivers.some(dr=>dr.daily && dr.daily[d]>0);
-  });
+  const dates = (DATA.daily_dates||[]).filter(d=>DATA.drivers.some(dr=>dr.daily && dr.daily[d]>0));
 
   let list=DATA.drivers.filter(d=>
     (!q || d.name.toLowerCase().includes(q)) &&
@@ -1506,49 +1595,123 @@ function renderDailyOrders(){
     (!fSup || d.supervisor===fSup) &&
     d.daily
   );
-  // رتّب حسب الأكثر طلبات
+  // عدّ الأيام الضعيفة لكل سائق
+  function weakOf(d){ let w=0; dates.forEach(dt=>{const v=d.daily?d.daily[dt]:undefined; if(typeof v==='number'&&v>0&&thr>0&&v<thr)w++;}); return w; }
+  // فلتر المخالفين فقط
+  if (__doOnly && thr>0) list = list.filter(d=>weakOf(d)>0);
   list.sort((a,b)=>(b.completed||0)-(a.completed||0));
 
   document.getElementById('do-count').textContent = list.length+' '+T('driver_unit');
 
-  // رأس الجدول
   const thead='<tr>'+
-    '<th style="position:sticky;right:0;background:var(--s2);z-index:3;min-width:150px;text-align:right">'+(isAr?'المندوب':'Driver')+'</th>'+
-    dates.map(d=>'<th style="min-width:38px;font-size:9.5px;white-space:nowrap">'+d+'</th>').join('')+
-    '<th style="min-width:50px;background:var(--s2)">'+(isAr?'المجموع':'Total')+'</th>'+
-    (thr>0?'<th style="min-width:46px;background:rgba(239,68,68,.12);color:var(--red)">'+(isAr?'أيام<'+thr:'days<'+thr)+'</th>':'')+
+    '<th class="col-name">'+(isAr?'المندوب':'Driver')+'</th>'+
+    dates.map(d=>'<th class="col-day">'+d.slice(0,2)+'</th>').join('')+
+    '<th class="col-sum">'+(isAr?'مج':'Σ')+'</th>'+
+    (thr>0?'<th class="col-weak">'+(isAr?'<'+thr:'<'+thr)+'</th>':'')+
     '</tr>';
   document.getElementById('do-thead').innerHTML=thead;
 
-  // صفوف
-  function cellColor(v){
-    if(v===undefined||v===null||v==='') return '';
-    if(v===0) return '';
-    if(thr>0 && v<thr) return 'background:rgba(239,68,68,.22);color:#fca5a5;font-weight:700';
-    if(v>=20) return 'background:rgba(34,197,94,.16);color:#86efac';
-    if(v>=10) return 'color:var(--txt2)';
-    return 'color:var(--txt3)';
+  function cellCls(v){
+    if(v===undefined||v===null||v==='') return 'cell-off';
+    if(v===0) return 'cell-off';
+    if(thr>0 && v<thr) return 'cell-weak';
+    if(v>=20) return 'cell-good';
+    if(v>=10) return 'cell-mid';
+    return 'cell-low';
   }
   const rows=list.map(d=>{
     let total=0, weakDays=0;
     const cells=dates.map(dt=>{
       const v=d.daily?d.daily[dt]:undefined;
       if(typeof v==='number'){ total+=v; if(thr>0 && v>0 && v<thr) weakDays++; }
-      const disp=(v===undefined||v===null)?'·':(v===0?'<span style="color:var(--s3)">—</span>':v);
-      return '<td style="text-align:center;'+cellColor(v)+'">'+disp+'</td>';
+      const disp=(v===undefined||v===null)?'·':(v===0?'—':v);
+      return '<td class="'+cellCls(v)+'">'+disp+'</td>';
     }).join('');
-    return '<tr onclick="openProfile('+d.id+')" style="cursor:pointer">'+
-      '<td style="position:sticky;right:0;background:var(--s1);z-index:2;text-align:right;font-weight:600;border-left:1px solid var(--brd)">'+
-        d.name+'<div style="font-size:9px;color:var(--txt3)">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+'</div></td>'+
+    return '<tr onclick="openProfile('+d.id+')">'+
+      '<td class="col-name">'+d.name+'<div class="nm-sub">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+'</div></td>'+
       cells+
-      '<td style="text-align:center;font-weight:800;background:var(--s2);color:var(--acc)">'+total.toLocaleString()+'</td>'+
-      (thr>0?'<td style="text-align:center;font-weight:800;background:rgba(239,68,68,.08);color:'+(weakDays>0?'#fca5a5':'var(--txt3)')+'">'+weakDays+'</td>':'')+
+      '<td class="col-sum">'+total.toLocaleString()+'</td>'+
+      (thr>0?'<td class="col-weak" style="color:'+(weakDays>0?'#fca5a5':'var(--txt3)')+'">'+weakDays+'</td>':'')+
       '</tr>';
   }).join('');
-  document.getElementById('do-tbody').innerHTML = list.length?rows:'<tr><td colspan="40" style="text-align:center;color:var(--txt3);padding:24px">'+T('no_results')+'</td></tr>';
+  const ncol = dates.length + 2 + (thr>0?1:0);
+  document.getElementById('do-tbody').innerHTML = list.length?rows:'<tr><td colspan="'+ncol+'" style="text-align:center;color:var(--txt3);padding:24px">'+T('no_results')+'</td></tr>';
 }
 
-// ─── GOALS / الأهداف ──────────────────────────────
+let __dhOnly = false;
+function toggleDhOnly(){
+  __dhOnly = !__dhOnly;
+  const t=document.getElementById('dh-only'); if(t) t.classList.toggle('on',__dhOnly);
+  const dot=document.getElementById('dh-only-dot'); if(dot) dot.textContent=__dhOnly?'✓':'';
+  renderDailyHours();
+}
+function renderDailyHours(){
+  const isAr = (typeof lang==='undefined' || lang==='ar');
+  const citySel=document.getElementById('dh-city'), supSel=document.getElementById('dh-sup');
+  if (citySel && citySel.options.length<=1){
+    const cities=[...new Set(DATA.drivers.map(d=>d.city).filter(Boolean))].sort();
+    citySel.innerHTML='<option value="">'+(isAr?'كل المدن':'All Cities')+'</option>'+
+      cities.map(c=>'<option value="'+c+'">'+cityLabel(c)+'</option>').join('');
+  }
+  if (supSel && supSel.options.length<=1){
+    const sups=[...new Set(DATA.drivers.map(d=>d.supervisor).filter(Boolean))].sort();
+    supSel.innerHTML='<option value="">'+(isAr?'كل المشرفين':'All Supervisors')+'</option>'+
+      sups.map(s=>'<option value="'+s+'">'+s+'</option>').join('');
+  }
+  const q=((document.getElementById('dh-search')||{}).value||'').trim().toLowerCase();
+  const fCity=(document.getElementById('dh-city')||{}).value||'';
+  const fVeh=(document.getElementById('dh-veh')||{}).value||'';
+  const fSup=(document.getElementById('dh-sup')||{}).value||'';
+  const thr=parseFloat((document.getElementById('dh-threshold')||{}).value||'0');
+
+  const dates = (DATA.daily_dates||[]).filter(d=>DATA.drivers.some(dr=>dr.daily_hours && dr.daily_hours[d]>0));
+
+  let list=DATA.drivers.filter(d=>
+    (!q || d.name.toLowerCase().includes(q)) &&
+    (!fCity || d.city===fCity) &&
+    (!fVeh || d.vehicle===fVeh) &&
+    (!fSup || d.supervisor===fSup) &&
+    d.daily_hours
+  );
+  function weakOf(d){ let w=0; dates.forEach(dt=>{const v=d.daily_hours?d.daily_hours[dt]:undefined; if(typeof v==='number'&&v>0&&thr>0&&v<thr)w++;}); return w; }
+  if (__dhOnly && thr>0) list = list.filter(d=>weakOf(d)>0);
+  list.sort((a,b)=>(b.hours||0)-(a.hours||0));
+  document.getElementById('dh-count').textContent = list.length+' '+T('driver_unit');
+
+  const thead='<tr>'+
+    '<th class="col-name">'+(isAr?'المندوب':'Driver')+'</th>'+
+    dates.map(d=>'<th class="col-day">'+d.slice(0,2)+'</th>').join('')+
+    '<th class="col-sum">'+(isAr?'مج':'Σ')+'</th>'+
+    (thr>0?'<th class="col-weak">'+(isAr?'<'+thr:'<'+thr)+'</th>':'')+
+    '</tr>';
+  document.getElementById('dh-thead').innerHTML=thead;
+
+  function cellCls(v){
+    if(v===undefined||v===null||v==='') return 'cell-off';
+    if(v===0) return 'cell-off';
+    if(thr>0 && v<thr) return 'cell-weak';
+    if(v>=12) return 'cell-good';
+    if(v>=8) return 'cell-mid';
+    return 'cell-low';
+  }
+  const rows=list.map(d=>{
+    let total=0, weakDays=0;
+    const cells=dates.map(dt=>{
+      const v=d.daily_hours?d.daily_hours[dt]:undefined;
+      if(typeof v==='number'){ total+=v; if(thr>0 && v>0 && v<thr) weakDays++; }
+      const disp=(v===undefined||v===null)?'·':(v===0?'—':v.toFixed(1));
+      return '<td class="'+cellCls(v)+'">'+disp+'</td>';
+    }).join('');
+    return '<tr onclick="openProfile('+d.id+')">'+
+      '<td class="col-name">'+d.name+'<div class="nm-sub">'+cityLabel(d.city)+' · '+(d.vehicle==='bike'?'🛵':'🚗')+'</div></td>'+
+      cells+
+      '<td class="col-sum">'+total.toFixed(0)+'</td>'+
+      (thr>0?'<td class="col-weak" style="color:'+(weakDays>0?'#fca5a5':'var(--txt3)')+'">'+weakDays+'</td>':'')+
+      '</tr>';
+  }).join('');
+  const ncol = dates.length + 2 + (thr>0?1:0);
+  document.getElementById('dh-tbody').innerHTML = list.length?rows:'<tr><td colspan="'+ncol+'" style="text-align:center;color:var(--txt3);padding:24px">'+T('no_results')+'</td></tr>';
+}
 // يحدد أي تواريخ هي ويكيند (جمعة/سبت) من قائمة dates بصيغة DD/MM لشهر 5-2026
 function computeWeekendDates() {
   const wknd = [];
