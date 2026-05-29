@@ -223,6 +223,7 @@ tbody tr:hover{background:var(--card2)}
   .bar-fill{height:6px!important}
 }
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -256,6 +257,9 @@ tbody tr:hover{background:var(--card2)}
       </div>
     </div>
     <div class="hdr-r">
+      <button class="rbtn no-print" id="mq-drive-btn" onclick="syncMuqeemFromDrive()" style="background:linear-gradient(135deg,#1a73e8,#0b5cb0);color:#fff;border:none">
+        <span id="mq-drive-icon">🔄</span> <span id="mq-drive-lbl">تحديث من Drive</span>
+      </button>
       <button class="rbtn no-print" onclick="window.print()">🖨️ طباعة التقرير</button>
       <a class="rbtn" href="index.html">🏠 الرئيسية</a>
       <button class="rbtn" onclick="logout()">🔒 خروج</button>
@@ -406,6 +410,237 @@ try{ if(sessionStorage.getItem('mqAuth')==='1'){ window.addEventListener('DOMCon
 
 // ═══ التطبيق ═══
 let RECORDS=[], META={};
+// ───── معرّفات Drive للملفين المطلوبين ─────
+const MUQEEM_DRIVE_ID = '1ZCXMrzM_0kBH5rPw00T_Hy8-1ok7xNZ_oDnBhDjxAao';
+const LICENSES_DRIVE_ID = '1Wz6Gu3Q-rFXW8z5FuX-roOBUPgl5NrRE5UEC1a3oafA';
+
+// مساعد: قراءة قيمة من خلية وتحويلها لنص
+function mqCell(v){
+  if(v===null||v===undefined) return '';
+  if(v instanceof Date){
+    const y=v.getFullYear(), m=String(v.getMonth()+1).padStart(2,'0'), d=String(v.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+d;
+  }
+  if(typeof v==='number' && Number.isInteger(v)) return String(v);
+  return String(v).trim();
+}
+
+// تحليل ورقة Muqeem الأساسية
+function parseMuqeemMain(rows){
+  const out = [];
+  for(let i=1; i<rows.length; i++){
+    const r = rows[i]; if(!r) continue;
+    const rid = mqCell(r[0]); if(!rid || !/^\d+$/.test(rid)) continue;
+    let days = 0;
+    try{ const d = r[7]; if(d!==null && d!==undefined && d!=='') days = parseInt(d,10)||0; }catch(e){}
+    out.push({
+      id:rid, name:mqCell(r[1]),
+      passport_exp:mqCell(r[2]), iqama_exp:mqCell(r[3]),
+      outside:mqCell(r[4]), employer:mqCell(r[5]),
+      iqama_days:days, record_type:mqCell(r[7+1]), worker_status:mqCell(r[8+1])
+    });
+  }
+  return out;
+}
+
+// تحليل ورقة Muqeem information
+function parseMuqeemInfo(rows){
+  const info = {};
+  for(let i=1; i<rows.length; i++){
+    const r = rows[i]; if(!r) continue;
+    const rid = mqCell(r[0]); if(!rid || !/^\d+$/.test(rid)) continue;
+    info[rid] = {
+      prof: mqCell(r[4]),  nat: mqCell(r[3]),
+      sal:  mqCell(r[9]),  mob: mqCell(r[17]),
+      email:mqCell(r[16]), join:mqCell(r[13]),
+      cend: mqCell(r[10]), act: mqCell(r[26]),
+      srv:  mqCell(r[15])
+    };
+  }
+  return info;
+}
+
+// تحليل ورقة كرت سائق
+function parseLicensesSheet(rows){
+  const lic = {};
+  for(let i=1; i<rows.length; i++){
+    const r = rows[i]; if(!r) continue;
+    const rid = mqCell(r[0]); if(!rid || !/^\d+$/.test(rid)) continue;
+    const lics = [];
+    if(mqCell(r[2])==='نعم') lics.push('دراجة');
+    if(mqCell(r[3])==='نعم') lics.push('خصوصي');
+    if(mqCell(r[4])==='نعم') lics.push('خفيف');
+    if(mqCell(r[5])==='نعم') lics.push('ثقيل');
+    lic[rid] = {
+      licenses: lics,
+      driver_card: mqCell(r[9])==='نعم',
+      work_city: mqCell(r[10]),
+      work_vehicle: mqCell(r[11]),
+      app: mqCell(r[12])
+    };
+  }
+  return lic;
+}
+
+// عرّب مدة الخدمة
+function mqArabize(s){
+  if(!s) return s;
+  return String(s).replace(/\u200e/g,'')
+    .replace(/Year and/g,'سنة و').replace(/Month and/g,'شهر و')
+    .replace(/Day/g,'يوم').replace(/Year/g,'سنة').replace(/Month/g,'شهر')
+    .replace(/\s+/g,' ').trim();
+}
+
+// دمج البيانات مع حساب حالة الإقامة والعقد
+function mergeMuqeemData(muqeemList, infoMap, licMap){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const parseD = s => { if(!s) return null; const m=String(s).match(/(\d{4})-(\d{2})-(\d{2})/); if(!m) return null; return new Date(+m[1], +m[2]-1, +m[3]); };
+  const records = muqeemList.map(row=>{
+    const inf = infoMap[row.id] || {};
+    const lic = licMap[row.id] || {};
+    const days = row.iqama_days || 0;
+    let iqama_class;
+    if(days<0) iqama_class='expired';
+    else if(days<=30) iqama_class='soon';
+    else if(days<=60) iqama_class='warn';
+    else iqama_class='valid';
+    const cend = inf.cend||'';
+    const cd = parseD(cend);
+    let contract_days=null, contract_class='unknown';
+    if(cd){
+      contract_days = Math.floor((cd - today)/86400000);
+      if(contract_days<0) contract_class='expired';
+      else if(contract_days<=60) contract_class='soon';
+      else contract_class='valid';
+    } else if(inf.act){
+      contract_class='note';
+    }
+    return {
+      id:row.id, name:row.name,
+      passport_exp:row.passport_exp, iqama_exp:row.iqama_exp,
+      outside:row.outside, employer:row.employer,
+      iqama_days:days, iqama_class,
+      record_type:row.record_type, worker_status:row.worker_status,
+      profession:inf.prof||'', nationality:inf.nat||'',
+      salary:inf.sal||'', mobile:inf.mob||'',
+      email:inf.email||'', join_date:inf.join||'',
+      contract_end:cend, contract_action:inf.act||'',
+      contract_class, contract_days,
+      service: mqArabize(inf.srv||''),
+      licenses: lic.licenses||[],
+      driver_card: lic.driver_card!==undefined ? lic.driver_card : null,
+      work_city: lic.work_city||'',
+      work_vehicle: lic.work_vehicle||'',
+      app: lic.app||''
+    };
+  });
+  // meta
+  const byIq={expired:0,soon:0,warn:0,valid:0};
+  const byCt={expired:0,soon:0,valid:0,note:0,unknown:0};
+  const byNat={}, byType={}, byApp={};
+  const licCounter={};
+  let cards=0, withLic=0;
+  records.forEach(r=>{
+    byIq[r.iqama_class]=(byIq[r.iqama_class]||0)+1;
+    byCt[r.contract_class]=(byCt[r.contract_class]||0)+1;
+    if(r.nationality) byNat[r.nationality]=(byNat[r.nationality]||0)+1;
+    byType[r.record_type]=(byType[r.record_type]||0)+1;
+    if(r.app) byApp[r.app]=(byApp[r.app]||0)+1;
+    if(r.driver_card===true) cards++;
+    if(r.licenses && r.licenses.length){
+      withLic++;
+      r.licenses.forEach(l=> licCounter[l]=(licCounter[l]||0)+1);
+    }
+  });
+  const onJob = records.filter(r=>r.worker_status==='على راس العمل').length;
+  return {
+    records,
+    meta:{
+      total:records.length,
+      iqama_expired:byIq.expired, iqama_soon:byIq.soon, iqama_warn:byIq.warn, iqama_valid:byIq.valid,
+      on_job:onJob,
+      expired_contract:byCt.expired, soon_contract:byCt.soon, valid_contract:byCt.valid, notice_period:0,
+      near_expiry:byCt.soon,
+      nationalities:byNat, record_types:byType, apps:byApp,
+      licenses:licCounter, driver_cards:cards, no_driver_cards:withLic-cards,
+      updated: new Date().toISOString().slice(0,10)
+    }
+  };
+}
+
+async function syncMuqeemFromDrive(){
+  const btn = document.getElementById('mq-drive-btn');
+  const icon = document.getElementById('mq-drive-icon');
+  const lbl = document.getElementById('mq-drive-lbl');
+  const origLbl = lbl ? lbl.textContent : 'تحديث من Drive';
+  if(btn) btn.disabled=true;
+  if(icon) icon.textContent='⏳';
+  if(lbl) lbl.textContent='جارٍ التحميل...';
+  try{
+    if(typeof XLSX==='undefined'){
+      throw new Error('SheetJS لم يُحمَّل (تحقق من الاتصال)');
+    }
+    // اجلب الملفين
+    if(lbl) lbl.textContent='يجلب ملف الموظفين...';
+    const u1 = 'https://docs.google.com/spreadsheets/d/'+MUQEEM_DRIVE_ID+'/export?format=xlsx&id='+MUQEEM_DRIVE_ID;
+    const r1 = await fetch(u1, {mode:'cors', credentials:'omit'});
+    if(!r1.ok) throw new Error('فشل تحميل ملف الموظفين: '+r1.status);
+    const ab1 = await r1.arrayBuffer();
+
+    if(lbl) lbl.textContent='يجلب ملف الرخص...';
+    const u2 = 'https://docs.google.com/spreadsheets/d/'+LICENSES_DRIVE_ID+'/export?format=xlsx&id='+LICENSES_DRIVE_ID;
+    const r2 = await fetch(u2, {mode:'cors', credentials:'omit'});
+    if(!r2.ok) throw new Error('فشل تحميل ملف الرخص: '+r2.status);
+    const ab2 = await r2.arrayBuffer();
+
+    if(lbl) lbl.textContent='يحلّل البيانات...';
+    const wb1 = XLSX.read(new Uint8Array(ab1), {type:'array', cellDates:true});
+    const wb2 = XLSX.read(new Uint8Array(ab2), {type:'array', cellDates:true});
+    // ورقتا Muqeem
+    const sMain = wb1.Sheets['Muqeem'] || wb1.Sheets[wb1.SheetNames[0]];
+    const sInfo = wb1.Sheets['Muqeem information'] || wb1.Sheets[wb1.SheetNames[1]];
+    const mainRows = XLSX.utils.sheet_to_json(sMain, {header:1, raw:false, dateNF:'yyyy-mm-dd'});
+    const infoRows = XLSX.utils.sheet_to_json(sInfo, {header:1, raw:false, dateNF:'yyyy-mm-dd'});
+    // ورقة كرت سائق
+    const sLic = wb2.Sheets['كرت سائق'];
+    if(!sLic) throw new Error('لم أجد ورقة "كرت سائق" في ملف الرخص');
+    const licRows = XLSX.utils.sheet_to_json(sLic, {header:1, raw:false, dateNF:'yyyy-mm-dd'});
+
+    const muqList = parseMuqeemMain(mainRows);
+    const infoMap = parseMuqeemInfo(infoRows);
+    const licMap = parseLicensesSheet(licRows);
+    const merged = mergeMuqeemData(muqList, infoMap, licMap);
+
+    // حدّث DATA و RECORDS و META وأعد الرسم
+    DATA.records = merged.records;
+    DATA.meta = merged.meta;
+    if(typeof RECORDS!=='undefined'){ RECORDS.length = 0; merged.records.forEach(r=>RECORDS.push(r)); }
+    if(typeof META!=='undefined'){ Object.keys(META).forEach(k=>delete META[k]); Object.assign(META, merged.meta); }
+    // أعد ملء الفلاتر والجداول
+    if(typeof populateFilters==='function') populateFilters();
+    if(typeof renderKPIs==='function') renderKPIs();
+    if(typeof renderTable==='function') renderTable();
+    if(typeof renderIqama==='function') renderIqama();
+    if(typeof renderContract==='function') renderContract();
+    if(typeof renderStats==='function') renderStats();
+    const upd = document.getElementById('upd');
+    if(upd) upd.textContent = merged.meta.updated;
+    if(lbl) lbl.textContent='✅ تم التحديث';
+    alert('✅ تم التحديث من Drive — '+merged.records.length+' موظف');
+  }catch(e){
+    console.error('[Drive Muqeem]', e);
+    let msg = e.message;
+    if(msg.includes('Failed to fetch')||msg.includes('CORS')||msg.includes('NetworkError')){
+      msg = '⚠️ تعذّر الجلب المباشر من Drive (قيود المتصفّح/CORS). تأكّد من أن الملفين مشاركة "أي شخص لديه الرابط".';
+    }
+    alert('⚠️ '+msg);
+  }finally{
+    if(btn) btn.disabled=false;
+    if(icon) icon.textContent='🔄';
+    if(lbl) lbl.textContent=origLbl;
+  }
+}
+
 function initApp(){
   RECORDS = DATA.records; META = DATA.meta;
   document.getElementById('upd').textContent = META.updated || '—';

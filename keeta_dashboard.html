@@ -162,6 +162,9 @@ td.n{color:var(--txt3);font-size:10px}
       <span id="kicon">📂</span> <span id="kbtn-text">تحديث البيانات</span>
     </button>
     <input type="file" id="kxlsx" accept=".xlsx,.xls" style="display:none" onchange="processKeetaExcel(event)">
+    <button class="rbtn home-btn no-print" id="kdrive-btn" onclick="syncKeetaFromDrive()" style="background:linear-gradient(135deg,#1a73e8,#0b5cb0);color:#fff;border:none">
+      <span id="kdrive-icon">🔄</span> <span id="kdrive-lbl">تحديث من Drive</span>
+    </button>
     <button class="rbtn home-btn no-print" onclick="window.print()" id="kt-print-btn">🖨️ <span id="kt-print-lbl">طباعة التقرير</span></button>
     <button class="rbtn home-btn" id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">EN</span></button>
     <button class="rbtn home-btn" onclick="goHome()"><span id="home-label">🏠 الرئيسية</span></button>
@@ -488,7 +491,8 @@ const KEETA_LABELS = {
     'kh-d-cls':      'الكلاس',
     'lang-label': 'EN',
     'home-label': '🏠 الرئيسية',
-    'kt-print-lbl': '🖨️ طباعة التقرير'
+    'kt-print-lbl': '🖨️ طباعة التقرير',
+    'kdrive-lbl':   'تحديث من Drive'
   },
   en: {
     'kt-attention': '⚠️ Need Attention (Invalid or Hard)',
@@ -524,7 +528,8 @@ const KEETA_LABELS = {
     'kh-d-cls':      'Class',
     'lang-label': 'ع',
     'home-label': '🏠 Home',
-    'kt-print-lbl': '🖨️ Print Report'
+    'kt-print-lbl': '🖨️ Print Report',
+    'kdrive-lbl':   'Update from Drive'
   }
 };
 
@@ -876,6 +881,45 @@ function kAlert(msg, ok){
   a.style.color = ok ? 'var(--grn2)' : 'var(--red2)';
   a.style.border = '1px solid ' + (ok ? 'rgba(34,197,94,.3)' : 'rgba(239,68,68,.3)');
   a.textContent = msg;
+}
+
+const KEETA_DRIVE_ID = '1ccEjeuq0DCzkW9BdOOock_P2LtYtK-6SHrX6gKFdgbA';
+
+async function syncKeetaFromDrive(){
+  const btn = document.getElementById('kdrive-btn');
+  const icon = document.getElementById('kdrive-icon');
+  const lbl = document.getElementById('kdrive-lbl');
+  const origLbl = lbl ? lbl.textContent : 'تحديث من Drive';
+  if(btn) btn.disabled = true;
+  if(icon) icon.textContent = '⏳';
+  if(lbl) lbl.textContent = (LANG==='ar'?'جارٍ التحميل...':'Downloading...');
+  try{
+    const url = 'https://docs.google.com/spreadsheets/d/'+KEETA_DRIVE_ID+'/export?format=xlsx&id='+KEETA_DRIVE_ID;
+    const resp = await fetch(url, {mode:'cors', credentials:'omit'});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const ab = await resp.arrayBuffer();
+    if(lbl) lbl.textContent = (LANG==='ar'?'يحلّل...':'Parsing...');
+    const wb = XLSX.read(new Uint8Array(ab), {type:'array', cellDates:true});
+    const data = parseKeetaWorkbook(wb);
+    Object.assign(DATA, data);
+    renderAll();
+    kAlert((LANG==='ar'?'✅ تم التحديث من Drive — ':'✅ Updated from Drive — ')+DATA.drivers.length+' '+KT('driver_unit'), true);
+  }catch(e){
+    console.error('[Drive Keeta]', e);
+    let msg = e.message;
+    if(msg.includes('Failed to fetch')||msg.includes('CORS')||msg.includes('NetworkError')){
+      msg = (LANG==='ar'
+        ? '⚠️ تعذّر الجلب المباشر من Drive (قيود المتصفّح). افتح الملف وحمّله ثم استخدم زر "تحديث البيانات".'
+        : '⚠️ Direct fetch failed (browser CORS). Download then use "Update Data" button.');
+    } else {
+      msg = (LANG==='ar'?'⚠️ خطأ: ':'⚠️ Error: ') + msg;
+    }
+    kAlert(msg, false);
+  }finally{
+    if(btn) btn.disabled = false;
+    if(icon) icon.textContent = '🔄';
+    if(lbl) lbl.textContent = origLbl;
+  }
 }
 
 function processKeetaExcel(event){
